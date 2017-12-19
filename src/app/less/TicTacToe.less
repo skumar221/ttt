@@ -1,3 +1,35 @@
 .tic-tac-toe {
-  background-color: red;
+  .ttt-board {
+    width: 400px;
+    height: 400px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-gap: 10px;
+
+    .ttt-row {
+      position: relative;
+      display: block;
+      height: 33%;
+      width: 100%;
+
+      .ttt-cell {
+        box-sizing: border-box;
+        display: inline-block;
+        position: relative;
+        border: solid 1px black;
+        text-align: center;
+        cursor: pointer;
+        //line-height: 100%;
+        height: 100%;
+        width: 33%;
+        .ttt-cell-inner {
+          width: 100%;
+          height: 100%;
+          min-width: 10px;
+        }
+      }
+    }
+  }
 }

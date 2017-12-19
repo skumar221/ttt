@@ -19,7 +19,7 @@ const makeRow = (props, rowInd) => {
       const move = _.get(props.moves, id)
       let click = _.noop, inner = ' '
 
-      if (!move) {
+      if (!move && !props.disabled) {
         const col = i
         click = e => {
           e.stopPropagation()

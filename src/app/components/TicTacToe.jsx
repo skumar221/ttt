@@ -8,13 +8,15 @@ class TicTacToe extends React.Component {
         rows: 3,
         cols: 3,
         moves: [],
-        moveHistory: []
+        moveHistory: [],
+        gameOver: false,
       }
 
       this._onCellClicked = this._onCellClicked.bind(this)
       this._generateEmptyMoves = this._generateEmptyMoves.bind(this)
       this._insertMove = this._insertMove.bind(this)
       this._checkWin = this._checkWin.bind(this)
+      this._onGameWon = this._onGameWon.bind(this)
 
       this.state.moves = this._generateEmptyMoves()
   }
@@ -22,7 +24,8 @@ class TicTacToe extends React.Component {
   _reset() {
     this.setState({
       moves: this._generateEmptyMoves(),
-      moveHistory: []
+      moveHistory: [],
+      gameOver: false,
     })
   }
 
@@ -58,7 +61,7 @@ class TicTacToe extends React.Component {
     }
 
     if (rowCount === totalRows) {
-      console.log("Row Win!")
+      this._onGameWon(move)
     }
 
     // check row
@@ -73,7 +76,7 @@ class TicTacToe extends React.Component {
     }
 
     if (colCount === totalCols) {
-      console.log("Col Win!")
+      this._onGameWon(move)
     }
 
     // don't check diagonals if totalRows != totalCols
@@ -96,9 +99,8 @@ class TicTacToe extends React.Component {
     }
 
     if (NWtoSECount === totalRows) {
-      console.log('Right diag win')
+      this._onGameWon(move)
     }
-
 
     // check / diagonal
     // TODO: Optimize this?
@@ -115,10 +117,18 @@ class TicTacToe extends React.Component {
     }
 
     if (SWtoNEcount === totalRows) {
-      console.log('Left diag win')
+      this._onGameWon(move)
     }
+  }
 
-
+  _onGameWon(move) {
+    this.setState({
+      gameOver: true
+    }, () => {
+      setTimeout(() => {
+        this._reset()
+      }, 2000)
+    })
   }
 
   _insertMove(row, col) {
@@ -148,13 +158,16 @@ class TicTacToe extends React.Component {
   }
 
   render() {
+    const winner = this.state.gameOver ? `${this.state.moveHistory[this.state.moveHistory.length - 1].player} wins!` : null
     return (
       <div className='tic-tac-toe'>
+        <div>{winner}</div>
         <Board
           rows={this.state.rows}
           cols={this.state.cols}
           moves={this.state.moves}
-          onCellClicked={this._onCellClicked}/>
+          disabled={this.state.gameOver}
+          onCellClicked={this._onCellClicked} />
       </div>
     )
   }

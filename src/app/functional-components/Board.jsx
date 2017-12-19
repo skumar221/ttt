@@ -17,7 +17,7 @@ const makeRow = (props, rowInd) => {
     while (i < props.cols) {
       const id = `${rowInd}.${i}`
       const move = _.get(props.moves, id)
-      let click = _.noop, inner = '   '
+      let click = _.noop, inner = ' '
 
       if (!move) {
         const col = i
@@ -29,31 +29,32 @@ const makeRow = (props, rowInd) => {
         inner = _.get(move, 'value')
       }
 
-      cells.push(
-        <div key={id} id={id}
-          className='ttt-cell'
-          onClick={click}>
-          <div className='ttt-cell-inner'>
-            {inner}
-          </div>
+      const style = {
+        'gridArea': `${rowInd + 1} / ${i + 1} / ${rowInd + 2} / ${i + 2}`,
+      }
 
+      cells.push(
+        <div key={id} id={id} className='ttt-cell' onClick={click} style={style}>
+          {inner}
         </div>
       )
 
       i++
     }
 
-    return (
-      <div className='ttt-row' key={`Row${rowInd}`}>
-        {cells}
-      </div>
-    )
+    return cells
 }
 
-const Board = props => (
- <div className='ttt-board'>
-   {makeRows(props)}
- </div>
-)
+const Board = props => {
+  const style = {
+    gridTemplateColumns: _.fill(Array(props.cols), '1fr').join(' '),
+    gridTemplateRows: _.fill(Array(props.rows), '1fr').join(' '),
+  }
+  return (
+    <div className='ttt-board' style={style}>
+      {makeRows(props)}
+    </div>
+  )
+}
 
 export default Board;

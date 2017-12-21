@@ -186,8 +186,10 @@ class TicTacToe extends React.Component {
             onCellClicked={this._onCellClicked} />
         </div>
         <div className='ttt-right-col'>
-          <div>{winner}</div>
-          <div>{currPlayer}</div>
+          <div className='message-box'>
+            <div>{winner}</div>
+            <div>{currPlayer}</div>
+          </div>
         </div>
       </div>
     )

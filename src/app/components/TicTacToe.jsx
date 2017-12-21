@@ -1,53 +1,57 @@
 import React from 'react'
 import Board from '../functional-components/Board.jsx'
 
+const GamePhases = {
+  PLAY: 0,
+  WIN: 1,
+  DRAW: 2
+}
+
+const _generateEmptyMoves = rows => {
+  let i = 0, moves = []
+  while (i < rows) {
+    moves.push(new Array())
+    i++
+  }
+
+  return moves
+}
+
+const initialState = {
+  rows: 3,
+  cols: 3,
+  moves: _generateEmptyMoves(3),
+  moveHistory: [],
+  gamePhase: GamePhases.PLAY,
+  players: [{
+    name: "Purayan",
+    symbol: "X",
+    color: '#663399'
+  }, {
+    name: "Vindastikal",
+    symbol: "O",
+    color: '#3dd60d'
+  }],
+  currPlayer: 0
+}
+
 class TicTacToe extends React.Component {
   constructor(props) {
       super(props)
-      this.state = {
-        rows: 3,
-        cols: 3,
-        moves: [],
-        moveHistory: [],
-        gameOver: false,
-        players: [{
-          name: "Purayan",
-          symbol: "X",
-          color: '#663399'
-        }, {
-          name: "Vindastikal",
-          symbol: "O",
-          color: '#3dd60d'
-        }],
-        currPlayer: 0
-      }
+      this.state = {...initialState}
 
       this._onCellClicked = this._onCellClicked.bind(this)
-      this._generateEmptyMoves = this._generateEmptyMoves.bind(this)
       this._insertMove = this._insertMove.bind(this)
       this._checkWin = this._checkWin.bind(this)
       this._onGameWon = this._onGameWon.bind(this)
-
-      this.state.moves = this._generateEmptyMoves()
+      this._getCurrentMessage = this._getCurrentMessage.bind(this)
   }
 
   _reset() {
     this.setState({
-      moves: this._generateEmptyMoves(),
-      moveHistory: [],
-      gameOver: false,
-      currPlayer: 0
+      ...initialState,
+      moves: _generateEmptyMoves(3),
     })
-  }
-
-  _generateEmptyMoves() {
-    let i = 0, moves = []
-    while (i < this.state.rows) {
-      moves.push(new Array())
-      i++
-    }
-
-    return moves
   }
 
   _onCellClicked(row, col, player) {
@@ -73,6 +77,7 @@ class TicTacToe extends React.Component {
 
     if (rowCount === totalRows) {
       this._onGameWon(move)
+      return
     }
 
     // check row
@@ -88,6 +93,7 @@ class TicTacToe extends React.Component {
 
     if (colCount === totalCols) {
       this._onGameWon(move)
+      return
     }
 
     // don't check diagonals if totalRows != totalCols
@@ -111,6 +117,7 @@ class TicTacToe extends React.Component {
 
     if (NWtoSECount === totalRows) {
       this._onGameWon(move)
+      return
     }
 
     // check / diagonal
@@ -129,12 +136,29 @@ class TicTacToe extends React.Component {
 
     if (SWtoNEcount === totalRows) {
       this._onGameWon(move)
+      return
+    }
+
+    // check draw
+    if (this.state.moveHistory.length === (this.state.rows * this.state.cols)) {
+      this._onGameDraw()
+      return
     }
   }
 
-  _onGameWon(move) {
+  _onGameDraw() {
     this.setState({
-      gameOver: true
+      gamePhase: GamePhases.DRAW
+    }, () => {
+      setTimeout(() => {
+        this._reset()
+      }, 3000)
+    })
+  }
+
+  _onGameWon() {
+    this.setState({
+      gamePhase: GamePhases.WIN
     }, () => {
       setTimeout(() => {
         this._reset()
@@ -172,9 +196,25 @@ class TicTacToe extends React.Component {
     })
   }
 
+  _getCurrentMessage() {
+    switch(this.state.gamePhase) {
+      case GamePhases.PLAY:
+        const currPlayer = this.state.players[this.state.currPlayer]
+        return `The current player is "${currPlayer.name}": ${currPlayer.symbol}.`
+        break
+      case GamePhases.WIN:
+        return `${this.state.moveHistory[this.state.moveHistory.length - 1].player.name} wins!`
+        break
+      case GamePhases.DRAW:
+        return `Draw!`
+        break
+      default:
+        return ''
+        break
+    }
+  }
+
   render() {
-    const winner = this.state.gameOver ? `${this.state.moveHistory[this.state.moveHistory.length - 1].player} wins!` : null
-    const currPlayer = this.state.gameOver ? '' : `The current player is "${this.state.players[this.state.currPlayer].name}".`
     return (
       <div className='tic-tac-toe'>
         <div className='ttt-left-col'>
@@ -182,13 +222,12 @@ class TicTacToe extends React.Component {
             rows={this.state.rows}
             cols={this.state.cols}
             moves={this.state.moves}
-            disabled={this.state.gameOver}
+            disabled={ this.state.gamePhase === GamePhases.WIN || this.state.gamePhase === GamePhases.DRAW }
             onCellClicked={this._onCellClicked} />
         </div>
         <div className='ttt-right-col'>
           <div className='message-box'>
-            <div>{winner}</div>
-            <div>{currPlayer}</div>
+            <div>{this._getCurrentMessage()}</div>
           </div>
         </div>
       </div>

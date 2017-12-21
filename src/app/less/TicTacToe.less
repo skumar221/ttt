@@ -1,28 +1,50 @@
 .tic-tac-toe {
-  width: 300px;
-  height: 300px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 400px auto;
+  grid-gap: 20px;
 
-  .ttt-board {
-    display: grid;
-    grid-gap: 10px;
-    background-color: rgb(200, 200, 200);
-    border: solid 10px black;
-    height: 100%;
-    width: 100%;
+  .ttt-left-col {
+    grid-column: 1;
+    width: 400px;
+    height: 400px;
 
-    .ttt-cell {
+    .ttt-board {
+      display: grid;
+      grid-gap: 10px;
+      background-color: rgb(200, 200, 200);
+      border: solid 10px black;
       box-sizing: border-box;
-      display: inline-block;
-      position: relative;
-      text-align: center;
-      cursor: pointer;
-      background-color: white;
-      font-size: 50px;
-      font-family: sans-serif;
-      display: flex;
-      align-items: center;
-      text-align: center;
-      justify-content: center;
+      height: 100%;
+      width: 100%;
+
+      .ttt-cell {
+        box-sizing: border-box;
+        display: inline-block;
+        position: relative;
+        text-align: center;
+        cursor: pointer;
+        background-color: white;
+        font-size: 50px;
+        font-family: sans-serif;
+        display: flex;
+        align-items: center;
+        text-align: center;
+        justify-content: center;
+
+        &:hover {
+          background-color: rgba(220, 220, 220, 1);
+          transition: background-color .5s;
+        }
+      }
     }
   }
+
+  .ttt-right-col {
+    grid-column: 2;
+    box-sizing: border-box;
+    border: solid 1px blue;
+    
+  }
+
 }

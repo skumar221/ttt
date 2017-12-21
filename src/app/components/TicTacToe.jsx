@@ -10,6 +10,16 @@ class TicTacToe extends React.Component {
         moves: [],
         moveHistory: [],
         gameOver: false,
+        players: [{
+          name: "Purayan",
+          symbol: "X",
+          color: '#663399'
+        }, {
+          name: "Vindastikal",
+          symbol: "O",
+          color: '#3dd60d'
+        }],
+        currPlayer: 0
       }
 
       this._onCellClicked = this._onCellClicked.bind(this)
@@ -26,6 +36,7 @@ class TicTacToe extends React.Component {
       moves: this._generateEmptyMoves(),
       moveHistory: [],
       gameOver: false,
+      currPlayer: 0
     })
   }
 
@@ -127,8 +138,12 @@ class TicTacToe extends React.Component {
     }, () => {
       setTimeout(() => {
         this._reset()
-      }, 2000)
+      }, 3000)
     })
+  }
+
+  _getOtherPlayer(p) {
+    return p ? 0 : 1
   }
 
   _insertMove(row, col) {
@@ -136,11 +151,10 @@ class TicTacToe extends React.Component {
       ...this.state.moves
     }
 
-    const currPlayer = "1"
-    const currValue = "O"
+    const player = this.state.players[this.state.currPlayer]
     const move = {
-        player: currPlayer,
-        value: currValue,
+        player: player,
+        value: player.symbol,
         row: row,
         col: col
     }
@@ -151,7 +165,8 @@ class TicTacToe extends React.Component {
       moves: moves,
       moveHistory: this.state.moveHistory.concat([
         move
-      ])
+      ]),
+      currPlayer: this._getOtherPlayer(this.state.currPlayer)
     }, () => {
       this._checkWin(move, this.state.moves)
     })
@@ -159,15 +174,21 @@ class TicTacToe extends React.Component {
 
   render() {
     const winner = this.state.gameOver ? `${this.state.moveHistory[this.state.moveHistory.length - 1].player} wins!` : null
+    const currPlayer = this.state.gameOver ? '' : `The current player is "${this.state.players[this.state.currPlayer].name}".`
     return (
       <div className='tic-tac-toe'>
-        <div>{winner}</div>
-        <Board
-          rows={this.state.rows}
-          cols={this.state.cols}
-          moves={this.state.moves}
-          disabled={this.state.gameOver}
-          onCellClicked={this._onCellClicked} />
+        <div className='ttt-left-col'>
+          <Board
+            rows={this.state.rows}
+            cols={this.state.cols}
+            moves={this.state.moves}
+            disabled={this.state.gameOver}
+            onCellClicked={this._onCellClicked} />
+        </div>
+        <div className='ttt-right-col'>
+          <div>{winner}</div>
+          <div>{currPlayer}</div>
+        </div>
       </div>
     )
   }

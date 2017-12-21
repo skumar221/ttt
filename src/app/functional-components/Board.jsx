@@ -31,6 +31,7 @@ const makeRow = (props, rowInd) => {
 
       const style = {
         'gridArea': `${rowInd + 1} / ${i + 1} / ${rowInd + 2} / ${i + 2}`,
+        'color': `${_.get(move, 'player.color')}`
       }
 
       cells.push(

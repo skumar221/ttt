@@ -32,7 +32,7 @@ const _getInitialState = () => ({
   }],
   currPlayer: 0,
   cpuPlayer: 1,
-  difficultyLevel: DifficultyLevels.EASY
+  difficultyLevel: DifficultyLevels.HARD
 })
 
 class TicTacToe extends React.Component {
@@ -80,10 +80,10 @@ class TicTacToe extends React.Component {
         ({ row, col } = AI.easy(this.state))
         break
       case DifficultyLevels.MEDIUM:
-        //({ row, col } = AI.medium(this.state))
+        ({ row, col } = AI.medium(this.state))
         break
       case DifficultyLevels.HARD:
-        //({ row, col } = AI.hard(this.state))
+        ({ row, col } = AI.hard(this.state))
         break
       default:
         break

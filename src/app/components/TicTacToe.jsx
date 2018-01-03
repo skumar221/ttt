@@ -4,6 +4,8 @@ import Board from '../functional-components/Board.jsx'
 import { GamePhases } from '../constants/GamePhases.js'
 import { DifficultyLevels } from '../constants/DifficultyLevels.js'
 import * as AI from '../ai/AI.js'
+import { checkWinner } from '../util/checkWinner.js'
+import * as PlayerEnums from '../constants/PlayerEnums.js'
 
 const _generateEmptyMoves = (rows, cols) => {
   let i = 0, moves = []
@@ -26,12 +28,12 @@ const _getInitialState = () => ({
     symbol: "X",
     color: '#663399'
   }, {
-    name: "CPU",
+    name: "AI",
     symbol: "O",
     color: '#3dd60d'
   }],
   currPlayer: 0,
-  cpuPlayer: 1,
+  aiPlayer: 1,
   difficultyLevel: DifficultyLevels.HARD
 })
 
@@ -42,37 +44,56 @@ class TicTacToe extends React.Component {
 
       this._onCellClicked = this._onCellClicked.bind(this)
       this._insertMove = this._insertMove.bind(this)
-      this._checkGameOver = this._checkGameOver.bind(this)
+      this._checkWinner = this._checkWinner.bind(this)
       this._onGameWon = this._onGameWon.bind(this)
       this._getCurrentMessage = this._getCurrentMessage.bind(this)
       this._isBoardDisabled = this._isBoardDisabled.bind(this)
-      this._moveCPU = this._moveCPU.bind(this)
+      this._maybeMoveAI = this._maybeMoveAI.bind(this)
   }
 
   componentDidUpdate() {
-    const { rows, cols, moves, moveHistory, currPlayer, cpuPlayer, gamePhase } = this.state
+    const { rows, cols, moves, moveHistory, currPlayer, aiPlayer, gamePhase } = this.state
 
     if (gamePhase !== GamePhases.PLAY) {
       return
     }
 
-    const moveCPU = () => {
-      if (currPlayer === cpuPlayer && gamePhase === GamePhases.PLAY) {
-        this._moveCPU()
-      }
-    }
-
     console.log("moves", moves.length, moves, moveHistory)
 
-    if (moveHistory.length < ((rows * 2) - 1)) {
-      moveCPU()
+    const numMoves = moves.map(r => r.map(c => {
+      if (c === null) {
+        return null
+      }
+      console.log(c)
+      return c.player.name === 'Player' ? PlayerEnums.PLAYER : PlayerEnums.AI
+    }))
+
+    console.log('numMoves', numMoves)
+    const winner = checkWinner(moves, rows, cols)
+    console.log('winner', winner)
+    switch (winner) {
+      case null:
+        this._maybeMoveAI(currPlayer, gamePhase)
+        break
+      case 0:
+        this._onGameDraw()
+        break
+      case 1:
+      case 2:
+        this._onGameWon()
+        break
+    }
+  }
+
+  /**
+  * @param {number} currPlayer
+  * @param {number} gamePhase
+  */
+  _maybeMoveAI(currPlayer, gamePhase) {
+    if (currPlayer !== aiPlayer || gamePhase !== GamePhases.PLAY) {
       return
     }
 
-    this._checkGameOver(moves, moveCPU)
-  }
-
-  _moveCPU() {
     const { difficultyLevel } = this.state
     let row, col
     switch(difficultyLevel) {
@@ -92,7 +113,6 @@ class TicTacToe extends React.Component {
     setTimeout(() => {
       this._insertMove(row, col, 1000)
     }, 500)
-
   }
 
   _reset() {
@@ -106,8 +126,7 @@ class TicTacToe extends React.Component {
     this._insertMove(row, col)
   }
 
-  _checkGameOver(moves, onGameNotOver) {
-    console.log("check game over")
+  _checkWinner(moves, onGameNotOver) {
     const move = _.last(moves)
     const { row, col, player } = move
     const { rows, cols, moveHistory } = this.state
@@ -247,14 +266,14 @@ class TicTacToe extends React.Component {
   }
 
   _getCurrentMessage() {
-    const { players, currPlayer, moveHistory, gamePhase, cpuPlayer }  = this.state
+    const { players, currPlayer, moveHistory, gamePhase, aiPlayer }  = this.state
 
     switch(gamePhase) {
       case GamePhases.PLAY:
         const _player = players[currPlayer]
         let msg =  `The current player is "${_player.name}": ${_player.symbol}.`
-        if (cpuPlayer === currPlayer) {
-          msg += ' (CPU)'
+        if (aiPlayer === currPlayer) {
+          msg += ' (AI)'
         }
         return msg
         break
@@ -271,10 +290,10 @@ class TicTacToe extends React.Component {
   }
 
   _isBoardDisabled() {
-    const { gamePhase, cpuPlayer, currPlayer } = this.state
+    const { gamePhase, aiPlayer, currPlayer } = this.state
     return gamePhase === GamePhases.WIN ||
       gamePhase === GamePhases.DRAW ||
-      cpuPlayer === currPlayer
+      aiPlayer === currPlayer
   }
 
   render() {

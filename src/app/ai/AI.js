@@ -18,6 +18,23 @@ export const easy = state => {
 }
 
 
+export const hard = state => {
+    numNodes = 0
+    let moves = recurseMinimax([...state.moves], true)[1]
+    for (let i = 0; i < moves.length; i++) {
+      for (let j = 0; j < moves[i].length; j++) {
+        if (moves[i][j] === true) {
+          return {
+            row: i,
+            col: j
+          }
+        }
+      }
+    }
+
+    throw("it shouldn't get here!")
+}
+
 
 var numNodes = 0;
 
@@ -40,10 +57,12 @@ function recurseMinimax(moves, player) {
       }
   } else {
     // Next states
-    let nextVal = null;
-    let nextBoard = null;
+    let nextVal = null
+    let nextBoard = null
+
     for (let i = 0; i < moves.length; i++) {
       for (let j = 0; j < moves[i].length; j++) {
+
             if (moves[i][j] === null) {
                 moves[i][j] = player
                 let value = recurseMinimax(moves, !player)[0]
@@ -55,23 +74,7 @@ function recurseMinimax(moves, player) {
             }
         }
     }
+
     return [nextVal, nextBoard];
   }
-
-
-export const hard = state => {
-    numNodes = 0
-    let moves = recurseMinimax([...state.moves], true)[1]
-    for (let i = 0; i < moves.length; i++) {
-      for (let j = 0; j < moves[i].length; j++) {
-        if (moves[i][j] === true) {
-          return {
-            row: i,
-            col: j
-          }
-        }
-      }
-    }
-
-    throw("it shouldn't get here!")
 }

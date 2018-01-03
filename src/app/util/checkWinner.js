@@ -32,8 +32,8 @@ export const checkWinner = (board, rows=3, cols=3) => {
   }
 
   // check \ diagonal
+  let sum = 0
   for (let i = 0; i < rows; i++) {
-    let sum = 0
     sum += board[i][i]
     if (Math.abs(sum) === rows) {
       return winBySum(sum)
@@ -41,8 +41,8 @@ export const checkWinner = (board, rows=3, cols=3) => {
   }
 
   // check / diagonal
+  sum = 0
   for (let i = 0; i < rows; i++) {
-    let sum = 0
     sum += board[rows - 1 - i][i]
     if (Math.abs(sum) === rows) {
       return winBySum(sum)

@@ -35,7 +35,7 @@ const _getInitialState = () => ({
       color: '#3dd60d'
     }
   },
-  currPlayer: 0,
+  currPlayer: Players.PLAYER,
   difficultyLevel: DifficultyLevels.HARD
 })
 
@@ -60,7 +60,6 @@ class TicTacToe extends React.Component {
     }
 
     const winner = checkWinner(moves, rows, cols)
-    console.log('winner', winner)
 
     switch (winner) {
       case null:
@@ -88,20 +87,20 @@ class TicTacToe extends React.Component {
     let row, col
     switch(difficultyLevel) {
       case DifficultyLevels.EASY:
-        ({ row, col } = AI.easy(this.state))
+        ({ row, col } = AI.easy(this.state.moves))
         break
       case DifficultyLevels.MEDIUM:
         ({ row, col } = AI.medium(this.state))
         break
       case DifficultyLevels.HARD:
-        ({ row, col } = AI.hard(this.state))
+        ({ row, col } = AI.hard(this.state.moves))
         break
       default:
         break
     }
 
     setTimeout(() => {
-      this._insertMove(this.state.currPlayer, row, col)
+      this._insertMove(row, col)
     }, 500)
   }
 
@@ -113,7 +112,7 @@ class TicTacToe extends React.Component {
   }
 
   _onCellClicked(row, col) {
-    this._insertMove(this.state.currPlayer, row, col)
+    this._insertMove(row, col)
   }
 
   _onGameDraw() {
@@ -136,39 +135,36 @@ class TicTacToe extends React.Component {
     })
   }
 
-  _getOtherPlayer(p) {
-    return p === Players.AI ? Players.Player : Players.AI
-  }
-
-  _insertMove(player, row, col) {
+  _insertMove(row, col) {
     let { moves, moveHistory, currPlayer } = this.state
-    moves[row][col] = player
+    moves[row][col] = currPlayer
+
     this.setState({
       moves: moves,
-      moveHistory: this.state.moveHistory.concat([
-        {
+      moveHistory: this.state.moveHistory.concat([{
           row: row,
           col: col,
-          player: player
-        }
-      ]),
-      currPlayer: this._getOtherPlayer(currPlayer)
+          player: currPlayer
+        }]),
+      currPlayer: Players.getOtherPlayer(currPlayer)
     })
   }
 
   _getCurrentMessage() {
-    const { players, currPlayer, moveHistory, gamePhase, aiPlayer }  = this.state
+    const { players, currPlayer, moveHistory, gamePhase }  = this.state
+    const playerName = this.state.players[currPlayer].name
+    const otherPlayerName = this.state.players[Players.getOtherPlayer(currPlayer)].name
 
     switch(gamePhase) {
       case GamePhases.PLAY:
-        let msg =  `The current player is "${currPlayer}".`
-        if (aiPlayer === currPlayer) {
+        let msg =  `The current player is "${playerName}".`
+        if (currPlayer === Players.AI) {
           msg += ' (AI)'
         }
         return msg
         break
       case GamePhases.WIN:
-        return `${moveHistory[moveHistory.length - 1].player === aiPlayer} wins!`
+        return `${otherPlayerName} wins!`
         break
       case GamePhases.DRAW:
         return `Draw!`
@@ -180,10 +176,10 @@ class TicTacToe extends React.Component {
   }
 
   _isBoardDisabled() {
-    const { gamePhase, aiPlayer, currPlayer } = this.state
+    const { gamePhase, currPlayer } = this.state
     return gamePhase === GamePhases.WIN ||
       gamePhase === GamePhases.DRAW ||
-      aiPlayer === currPlayer
+      currPlayer === Players.AI
   }
 
   render() {
@@ -196,6 +192,7 @@ class TicTacToe extends React.Component {
             cols={cols}
             moves={moves}
             disabled={this._isBoardDisabled()}
+            players={this.state.players}
             onCellClicked={this._onCellClicked} />
         </div>
         <div className='ttt-right-col'>

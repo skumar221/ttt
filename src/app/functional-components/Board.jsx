@@ -15,9 +15,12 @@ const makeRow = (props, rowInd) => {
     let i = 0, cells = []
 
     while (i < props.cols) {
-      const id = `${rowInd}.${i}`
-      const move = _.get(props.moves, id)
-      let click = _.noop, inner = move
+      const id = `${rowInd}.${i}`,
+        move = _.get(props.moves, id),
+        player = _.get(props.players, `${move}`)
+
+      let click = _.noop,
+        inner = ''
 
       if (move === null && !props.disabled) {
         const col = i
@@ -25,11 +28,13 @@ const makeRow = (props, rowInd) => {
           e.stopPropagation()
           props.onCellClicked(rowInd, col)
         }
+      } else if (move !== null) {
+        inner = _.get(player, `symbol`)
       }
 
       const style = {
         'gridArea': `${rowInd + 1} / ${i + 1} / ${rowInd + 2} / ${i + 2}`,
-        'color': 'black'//`${_.get(move, 'player.color')}`
+        'color': `${_.get(player, `color`)}`
       }
 
       cells.push(

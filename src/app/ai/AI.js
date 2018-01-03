@@ -1,13 +1,14 @@
 import { checkWinner } from '../util/checkWinner.js'
+import * as Players from '../constants/Players.js'
 
-export const easy = state => {
+export const easy = board => {
   let row = 0, col = 0
-  const board = state.board
   let emptyMoves = []
-
+  console.log(board)
   for (let i = 0; i < board.length; i++) {
     for (let j = 0; j < board[i].length; j++) {
-      if (!board[i][j]) {
+      console.log(board[i][j])
+      if (board[i][j] === null) {
         emptyMoves.push({
           row: i,
           col: j
@@ -20,9 +21,8 @@ export const easy = state => {
 }
 
 
-export const hard = state => {
-    numNodes = 0
-    let board = recurseMinimax(state.moves, true)[1]
+export const hard = moves => {
+    let board = recurseMinimax(moves, true)[1]
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[i].length; j++) {
         if (board[i][j] === true) {
@@ -38,12 +38,8 @@ export const hard = state => {
 }
 
 
-var numNodes = 0;
-
 function recurseMinimax(board, player) {
-  numNodes++;
-
-  var winner = checkWinner(board, 3, 3);
+  let winner = checkWinner(board, 3, 3)
 
   if (winner != null) {
       switch(winner) {
@@ -51,24 +47,24 @@ function recurseMinimax(board, player) {
               // AI wins
               return [1, board]
           case 0:
-              // opponent wins
-              return [-1, board]
-          case -1:
               // Tie
               return [0, board]
+          case -1:
+              // opponent wins
+              return [-1, board]
       }
   } else {
     // Next states
-    let nextVal = null
-    let nextBoard = null
+    let nextVal = null, nextBoard = null
 
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[i].length; j++) {
 
             if (board[i][j] === null) {
                 board[i][j] = player
-                let value = recurseMinimax(board, !player)[0]
-                if ((player && (nextVal == null || value > nextVal)) || (!player && (nextVal == null || value < nextVal))) {
+                let value = recurseMinimax(board, Players.getOtherPlayer(player))[0]
+                if ((player && (nextVal == null || value > nextVal)) ||
+                  (!player && (nextVal == null || value < nextVal))) {
                     nextBoard = board.map(r => [...r])
                     nextVal = value
                 }

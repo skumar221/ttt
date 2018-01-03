@@ -17,21 +17,19 @@ const makeRow = (props, rowInd) => {
     while (i < props.cols) {
       const id = `${rowInd}.${i}`
       const move = _.get(props.moves, id)
-      let click = _.noop, inner = ' '
+      let click = _.noop, inner = move
 
-      if (!move && !props.disabled) {
+      if (move === null && !props.disabled) {
         const col = i
         click = e => {
           e.stopPropagation()
           props.onCellClicked(rowInd, col)
         }
-      } else  {
-        inner = _.get(move, 'value')
       }
 
       const style = {
         'gridArea': `${rowInd + 1} / ${i + 1} / ${rowInd + 2} / ${i + 2}`,
-        'color': `${_.get(move, 'player.color')}`
+        'color': 'black'//`${_.get(move, 'player.color')}`
       }
 
       cells.push(

@@ -1,11 +1,13 @@
+import { checkWinner } from '../util/checkWinner.js'
+
 export const easy = state => {
   let row = 0, col = 0
-  const moves = state.moves
+  const board = state.board
   let emptyMoves = []
 
-  for (let i = 0; i < moves.length; i++) {
-    for (let j = 0; j < moves[i].length; j++) {
-      if (!moves[i][j]) {
+  for (let i = 0; i < board.length; i++) {
+    for (let j = 0; j < board[i].length; j++) {
+      if (!board[i][j]) {
         emptyMoves.push({
           row: i,
           col: j
@@ -20,10 +22,10 @@ export const easy = state => {
 
 export const hard = state => {
     numNodes = 0
-    let moves = recurseMinimax([...state.moves], true)[1]
-    for (let i = 0; i < moves.length; i++) {
-      for (let j = 0; j < moves[i].length; j++) {
-        if (moves[i][j] === true) {
+    let board = recurseMinimax(state.moves, true)[1]
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
+        if (board[i][j] === true) {
           return {
             row: i,
             col: j
@@ -38,10 +40,10 @@ export const hard = state => {
 
 var numNodes = 0;
 
-function recurseMinimax(moves, player) {
+function recurseMinimax(board, player) {
   numNodes++;
 
-  var winner = getWinner(board);
+  var winner = checkWinner(board, 3, 3);
 
   if (winner != null) {
       switch(winner) {
@@ -60,17 +62,17 @@ function recurseMinimax(moves, player) {
     let nextVal = null
     let nextBoard = null
 
-    for (let i = 0; i < moves.length; i++) {
-      for (let j = 0; j < moves[i].length; j++) {
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
 
-            if (moves[i][j] === null) {
-                moves[i][j] = player
-                let value = recurseMinimax(moves, !player)[0]
+            if (board[i][j] === null) {
+                board[i][j] = player
+                let value = recurseMinimax(board, !player)[0]
                 if ((player && (nextVal == null || value > nextVal)) || (!player && (nextVal == null || value < nextVal))) {
-                    nextBoard = moves.map(r => [...r])
+                    nextBoard = board.map(r => [...r])
                     nextVal = value
                 }
-                moves[i][j] = null
+                board[i][j] = null
             }
         }
     }

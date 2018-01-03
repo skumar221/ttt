@@ -7,7 +7,7 @@ import {winBySum, DRAW} from './winEnums.js'
 * @return {number | null}
 */
 
-export const checkWinner = (board, rows, cols) => {
+export const checkWinner = (board, rows=3, cols=3) => {
 
   // check columns
   for (let j = 0; j < cols; j++) {

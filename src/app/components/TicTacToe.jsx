@@ -1,11 +1,15 @@
 import React from 'react'
 import _ from 'lodash'
 import Board from '../functional-components/Board.jsx'
-import { GamePhases } from '../constants/GamePhases.js'
-import { DifficultyLevels } from '../constants/DifficultyLevels.js'
+
+import { PLAY, WIN, DRAW } from '../constants/gamePhases.js'
+
+import { checkWinner } from '../util/winUtils.js'
+
+import * as plrs from '../constants/players.js'
+
+import { EASY, MEDIUM, HARD } from '../constants/difficultyLevels.js'
 import * as AI from '../ai/AI.js'
-import { checkWinner } from '../util/checkWinner.js'
-import * as Players from '../constants/Players.js'
 
 const _generateEmptyMoves = (rows, cols) => {
   let i = 0, moves = []
@@ -22,21 +26,21 @@ const _getInitialState = () => ({
   cols: 3,
   moves: _generateEmptyMoves(3, 3),
   moveHistory: [],
-  gamePhase: GamePhases.PLAY,
+  gamePhase: PLAY,
   players: {
-    [Players.PLAYER]: {
+    [plrs.PLAYER]: {
       name: "Player",
       symbol: "X",
       color: '#663399'
     },
-    [Players.AI]: {
+    [plrs.AI]: {
       name: "AI",
       symbol: "O",
       color: '#3dd60d'
     }
   },
-  currPlayer: Players.PLAYER,
-  difficultyLevel: DifficultyLevels.HARD
+  currPlayer: plrs.PLAYER,
+  difficultyLevel: HARD
 })
 
 class TicTacToe extends React.Component {
@@ -55,7 +59,7 @@ class TicTacToe extends React.Component {
   componentDidUpdate() {
     const { rows, cols, moves, moveHistory, currPlayer, gamePhase, difficultyLevel} = this.state
 
-    if (gamePhase !== GamePhases.PLAY) {
+    if (gamePhase !== PLAY) {
       return
     }
 
@@ -68,8 +72,7 @@ class TicTacToe extends React.Component {
       case 0:
         this._onGameDraw()
         break
-      case 1:
-      case 2:
+      default:
         this._onGameWon()
         break
     }
@@ -80,20 +83,22 @@ class TicTacToe extends React.Component {
   * @param {number} gamePhase
   */
   _maybeMoveAI(currPlayer, gamePhase, difficultyLevel) {
-    if (currPlayer !== Players.AI || gamePhase !== GamePhases.PLAY) {
+    if (currPlayer !== plrs.AI || gamePhase !== PLAY) {
       return
     }
 
+    let { moves } = this.state
+
     let row, col
     switch(difficultyLevel) {
-      case DifficultyLevels.EASY:
-        ({ row, col } = AI.easy(this.state.moves))
+      case EASY:
+        ({ row, col } = AI.easy(moves))
         break
-      case DifficultyLevels.MEDIUM:
-        ({ row, col } = AI.medium(this.state))
+      case MEDIUM:
+        ({ row, col } = AI.medium(moves))
         break
-      case DifficultyLevels.HARD:
-        ({ row, col } = AI.hard(this.state.moves))
+      case HARD:
+        ({ row, col } = AI.hard(moves))
         break
       default:
         break
@@ -117,7 +122,7 @@ class TicTacToe extends React.Component {
 
   _onGameDraw() {
     this.setState({
-      gamePhase: GamePhases.DRAW
+      gamePhase: DRAW
     }, () => {
       setTimeout(() => {
         this._reset()
@@ -127,7 +132,7 @@ class TicTacToe extends React.Component {
 
   _onGameWon() {
     this.setState({
-      gamePhase: GamePhases.WIN
+      gamePhase: WIN
     }, () => {
       setTimeout(() => {
         this._reset()
@@ -138,6 +143,7 @@ class TicTacToe extends React.Component {
   _insertMove(row, col) {
     let { moves, moveHistory, currPlayer } = this.state
     moves[row][col] = currPlayer
+    console.log("inert", moves)
 
     this.setState({
       moves: moves,
@@ -146,27 +152,27 @@ class TicTacToe extends React.Component {
           col: col,
           player: currPlayer
         }]),
-      currPlayer: Players.getOtherPlayer(currPlayer)
+      currPlayer: plrs.getOtherPlayer(currPlayer)
     })
   }
 
   _getCurrentMessage() {
     const { players, currPlayer, moveHistory, gamePhase }  = this.state
     const playerName = this.state.players[currPlayer].name
-    const otherPlayerName = this.state.players[Players.getOtherPlayer(currPlayer)].name
+    const otherPlayerName = this.state.players[plrs.getOtherPlayer(currPlayer)].name
 
     switch(gamePhase) {
-      case GamePhases.PLAY:
+      case PLAY:
         let msg =  `The current player is "${playerName}".`
-        if (currPlayer === Players.AI) {
+        if (currPlayer === plrs.AI) {
           msg += ' (AI)'
         }
         return msg
         break
-      case GamePhases.WIN:
+      case WIN:
         return `${otherPlayerName} wins!`
         break
-      case GamePhases.DRAW:
+      case DRAW:
         return `Draw!`
         break
       default:
@@ -177,13 +183,15 @@ class TicTacToe extends React.Component {
 
   _isBoardDisabled() {
     const { gamePhase, currPlayer } = this.state
-    return gamePhase === GamePhases.WIN ||
-      gamePhase === GamePhases.DRAW ||
-      currPlayer === Players.AI
+    console.log(gamePhase, currPlayer, plrs.AI + '', plrs, this.state.currPlayer)
+    return gamePhase === WIN ||
+      gamePhase === DRAW ||
+      this.state.currPlayer === plrs.AI
   }
 
   render() {
     const { rows, cols, moves } = this.state
+    console.log("disabled", this._isBoardDisabled())
     return (
       <div className='tic-tac-toe'>
         <div className='ttt-left-col'>

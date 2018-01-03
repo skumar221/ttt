@@ -1,14 +1,14 @@
-import { checkWinner } from '../util/checkWinner.js'
-import * as Players from '../constants/Players.js'
+import { checkWinner, winTypes } from '../util/winUtils.js'
+import * as players from '../constants/players.js'
 
-export const easy = board => {
+export const easy = nextMoves => {
   let row = 0, col = 0
   let emptyMoves = []
-  console.log(board)
-  for (let i = 0; i < board.length; i++) {
-    for (let j = 0; j < board[i].length; j++) {
-      console.log(board[i][j])
-      if (board[i][j] === null) {
+  //console.log(nextMoves)
+  for (let i = 0; i < nextMoves.length; i++) {
+    for (let j = 0; j < nextMoves[i].length; j++) {
+      //console.log(nextMoves[i][j])
+      if (nextMoves[i][j] === null) {
         emptyMoves.push({
           row: i,
           col: j
@@ -20,55 +20,101 @@ export const easy = board => {
   return emptyMoves[Math.floor(Math.random() * emptyMoves.length)]
 }
 
+const print2d = a => {
+  let print = ''
+  a.forEach(r => {
+    let line = ''
+    r.forEach(c => {
+      line += c + ' '
+    })
+    line += '\n'
+    print += line
+  })
+  console.log(print)
+}
 
 export const hard = moves => {
-    let board = recurseMinimax(moves, true)[1]
-    for (let i = 0; i < board.length; i++) {
-      for (let j = 0; j < board[i].length; j++) {
-        if (board[i][j] === true) {
-          return {
-            row: i,
-            col: j
-          }
+  const mm = recurseMinimax(moves.map(r => [...r]), players.AI)
+  const nextMoves = mm[1]
+
+
+
+  //console.log("\nmoves")
+  //print2d(moves)
+  //console.log("nextMoves")
+  //print2d(nextMoves)
+
+  for (let i = 0; i < nextMoves.length; i++) {
+    for (let j = 0; j < nextMoves[i].length; j++) {
+      if (moves[i][j] !== nextMoves[i][j]) {
+        console.log("diff", i, j)
+        return {
+          row: i,
+          col: j
         }
       }
     }
+  }
 
-    throw("it shouldn't get here!")
+  //console.log("iet shouldnt get here")
+
+    //throw("it shouldn't get here!")
 }
 
 
-function recurseMinimax(board, player) {
-  let winner = checkWinner(board, 3, 3)
+function recurseMinimax(nextMoves, player) {
+  const winner = checkWinner(nextMoves, 3, 3)
+  //console.log(winner)
 
   if (winner != null) {
-      switch(winner) {
-          case 1:
-              // AI wins
-              return [1, board]
-          case 0:
-              // Tie
-              return [0, board]
-          case -1:
-              // opponent wins
-              return [-1, board]
-      }
+    //console.log("\nwinner", winner)
+    //print2d(nextMoves)
+    switch(winner) {
+      case winTypes.AI:
+          // AI wins
+          return [1, nextMoves]
+      case winTypes.PLAYER:
+          // opponent wins
+          return [-1, nextMoves]
+      case winTypes.DRAW:
+          // Tie
+          return [0, nextMoves]
+    }
   } else {
     // Next states
     let nextVal = null, nextBoard = null
 
-    for (let i = 0; i < board.length; i++) {
-      for (let j = 0; j < board[i].length; j++) {
+    for (let i = 0; i < nextMoves.length; i++) {
+      for (let j = 0; j < nextMoves[i].length; j++) {
 
-            if (board[i][j] === null) {
-                board[i][j] = player
-                let value = recurseMinimax(board, Players.getOtherPlayer(player))[0]
-                if ((player && (nextVal == null || value > nextVal)) ||
-                  (!player && (nextVal == null || value < nextVal))) {
-                    nextBoard = board.map(r => [...r])
+            if (nextMoves[i][j] === null) {
+                nextMoves[i][j] = player
+
+                let b = recurseMinimax(nextMoves, players.getOtherPlayer(player))
+                //print2d(b[1])
+
+                let value = b[0]
+
+                // hard
+                
+                if ((player === players.AI && (nextVal == null || value > nextVal)) ||
+                  (player === players.PLAYER && (nextVal == null || value < nextVal))) {
+                    nextBoard = nextMoves.map(r => [...r])
                     nextVal = value
                 }
-                board[i][j] = null
+
+
+                // easy
+
+                /*
+                if ((player === players.AI && (nextVal == null || value < nextVal)) ||
+                  (player === players.PLAYER && (nextVal == null || value > nextVal))) {
+                    nextBoard = nextMoves.map(r => [...r])
+                    nextVal = value
+                }
+                */
+
+                nextMoves[i][j] = null
             }
         }
     }

@@ -1,12 +1,28 @@
 import _ from 'lodash'
-import {winBySum, DRAW} from './winEnums.js'
 
+export const DRAW = 0
+export const AI = 1
+export const PLAYER = -1
+
+export const winTypes = {
+  DRAW,
+  AI,
+  PLAYER,
+}
+
+export const getWinnerBySum = sum => {
+  switch (sum) {
+    case -3:
+      return PLAYER
+    case 3:
+      return AI
+  }
+}
 
 /**
 *
 * @return {number | null}
 */
-
 export const checkWinner = (board, rows=3, cols=3) => {
 
   // check columns
@@ -15,7 +31,7 @@ export const checkWinner = (board, rows=3, cols=3) => {
     for (let i = 0; i < rows; i++) {
       sum += board[i][j]
       if (Math.abs(sum) === rows) {
-        return winBySum(sum)
+        return getWinnerBySum(sum)
       }
     }
   }
@@ -26,7 +42,7 @@ export const checkWinner = (board, rows=3, cols=3) => {
     for (let j = 0; j < cols; j++) {
       sum += board[i][j]
       if (Math.abs(sum) === rows) {
-        return winBySum(sum)
+        return getWinnerBySum(sum)
       }
     }
   }
@@ -36,7 +52,7 @@ export const checkWinner = (board, rows=3, cols=3) => {
   for (let i = 0; i < rows; i++) {
     sum += board[i][i]
     if (Math.abs(sum) === rows) {
-      return winBySum(sum)
+      return getWinnerBySum(sum)
     }
   }
 
@@ -45,7 +61,7 @@ export const checkWinner = (board, rows=3, cols=3) => {
   for (let i = 0; i < rows; i++) {
     sum += board[rows - 1 - i][i]
     if (Math.abs(sum) === rows) {
-      return winBySum(sum)
+      return getWinnerBySum(sum)
     }
   }
 

@@ -22,6 +22,8 @@ const makeRow = (props, rowInd) => {
       let click = _.noop,
         inner = ''
 
+        console.log("props", props)
+
       if (move === null && !props.disabled) {
         const col = i
         click = e => {

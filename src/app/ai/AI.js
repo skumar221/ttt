@@ -65,7 +65,7 @@ export const play = (moves, difficulty) => {
 }
 
 
-function recurseMinimax(nextMoves, player, difficulty=EASY) {
+function recurseMinimax(nextMoves, player, difficulty, depth=0) {
   const winner = checkWinner(nextMoves, 3, 3)
 
   if (winner != null) {
@@ -94,7 +94,7 @@ function recurseMinimax(nextMoves, player, difficulty=EASY) {
             if (nextMoves[i][j] === null) {
                 nextMoves[i][j] = player
 
-                let b = recurseMinimax(nextMoves, players.getOtherPlayer(player))
+                let b = recurseMinimax(nextMoves, players.getOtherPlayer(player), difficulty, depth++)
                 //console.log("result:")
                 //print2d(b[1])
 
@@ -102,7 +102,6 @@ function recurseMinimax(nextMoves, player, difficulty=EASY) {
 
                 switch(difficulty) {
                   case HARD:
-                    console.log("hard")
                     if ((player === players.AI && (nextVal == null || value > nextVal)) ||
                       (player === players.PLAYER && (nextVal == null || value < nextVal))) {
                         //console.log("player", player)
@@ -125,6 +124,8 @@ function recurseMinimax(nextMoves, player, difficulty=EASY) {
                         nextVal = value
                     }
                     break
+                  default:
+                    throw(`Invalid difficulty ${difficulty}`)
                 }
 
                 nextMoves[i][j] = null

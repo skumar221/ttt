@@ -24,23 +24,12 @@ const _generateEmptyMoves = (rows, cols) => {
 const _getInitialState = () => ({
   rows: 3,
   cols: 3,
-  moves: _generateEmptyMoves(3, 3),
+  moves: _generateEmptyMoves(3, 3), //[[-1, 1, 1], [-1, -1, 1], [null, null, null]],
   moveHistory: [],
   gamePhase: PLAY,
-  players: {
-    [plrs.PLAYER]: {
-      name: "Player",
-      symbol: "X",
-      color: '#663399'
-    },
-    [plrs.AI]: {
-      name: "AI",
-      symbol: "O",
-      color: '#3dd60d'
-    }
-  },
+  players: plrs.asObj,
   currPlayer: plrs.PLAYER,
-  difficultyLevel: HARD
+  difficulty: HARD
 })
 
 class TicTacToe extends React.Component {
@@ -57,7 +46,7 @@ class TicTacToe extends React.Component {
   }
 
   componentDidUpdate() {
-    const { rows, cols, moves, moveHistory, currPlayer, gamePhase, difficultyLevel} = this.state
+    const { rows, cols, moves, moveHistory, currPlayer, gamePhase, difficulty} = this.state
 
     if (gamePhase !== PLAY) {
       return
@@ -67,7 +56,7 @@ class TicTacToe extends React.Component {
 
     switch (winner) {
       case null:
-        this._maybeMoveAI(currPlayer, gamePhase, difficultyLevel)
+        this._maybeMoveAI(currPlayer, gamePhase, difficulty)
         break
       case 0:
         this._onGameDraw()
@@ -81,28 +70,14 @@ class TicTacToe extends React.Component {
   /**
   * @param {number} currPlayer
   * @param {number} gamePhase
+  * @param {number} difficulty
   */
-  _maybeMoveAI(currPlayer, gamePhase, difficultyLevel) {
+  _maybeMoveAI(currPlayer, gamePhase, difficulty) {
     if (currPlayer !== plrs.AI || gamePhase !== PLAY) {
       return
     }
 
-    let { moves } = this.state
-
-    let row, col
-    switch(difficultyLevel) {
-      case EASY:
-        ({ row, col } = AI.easy(moves))
-        break
-      case MEDIUM:
-        ({ row, col } = AI.medium(moves))
-        break
-      case HARD:
-        ({ row, col } = AI.hard(moves))
-        break
-      default:
-        break
-    }
+    const {row, col} = AI.play(this.state.moves, difficulty)
 
     setTimeout(() => {
       this._insertMove(row, col)
@@ -112,7 +87,7 @@ class TicTacToe extends React.Component {
   _reset() {
     this.setState({
       ..._getInitialState(),
-      difficultyLevel: this.state.difficultyLevel
+      difficulty: this.state.difficulty
     })
   }
 
@@ -143,7 +118,6 @@ class TicTacToe extends React.Component {
   _insertMove(row, col) {
     let { moves, moveHistory, currPlayer } = this.state
     moves[row][col] = currPlayer
-    console.log("inert", moves)
 
     this.setState({
       moves: moves,
@@ -183,15 +157,11 @@ class TicTacToe extends React.Component {
 
   _isBoardDisabled() {
     const { gamePhase, currPlayer } = this.state
-    console.log(gamePhase, currPlayer, plrs.AI + '', plrs, this.state.currPlayer)
-    return gamePhase === WIN ||
-      gamePhase === DRAW ||
-      this.state.currPlayer === plrs.AI
+    return gamePhase === WIN || gamePhase === DRAW || currPlayer === plrs.AI
   }
 
   render() {
     const { rows, cols, moves } = this.state
-    console.log("disabled", this._isBoardDisabled())
     return (
       <div className='tic-tac-toe'>
         <div className='ttt-left-col'>

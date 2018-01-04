@@ -1,5 +1,6 @@
 import { checkWinner, winTypes } from '../util/winUtils.js'
 import * as players from '../constants/players.js'
+import { EASY, MEDIUM, HARD } from '../constants/difficultyLevels.js'
 
 export const easy = nextMoves => {
   let row = 0, col = 0
@@ -22,10 +23,12 @@ export const easy = nextMoves => {
 
 const print2d = a => {
   let print = ''
+  const plrs = players.asObj
   a.forEach(r => {
     let line = ''
     r.forEach(c => {
-      line += c + ' '
+      // TODO make this more robust
+      line += _.get(plrs, `${c}.symbol`, '_') + ' '
     })
     line += '\n'
     print += line
@@ -33,8 +36,8 @@ const print2d = a => {
   console.log(print)
 }
 
-export const hard = moves => {
-  const mm = recurseMinimax(moves.map(r => [...r]), players.AI)
+export const play = (moves, difficulty) => {
+  const mm = recurseMinimax(moves.map(r => [...r]), players.AI, difficulty)
   const nextMoves = mm[1]
 
 
@@ -62,13 +65,13 @@ export const hard = moves => {
 }
 
 
-function recurseMinimax(nextMoves, player) {
+function recurseMinimax(nextMoves, player, difficulty=EASY) {
   const winner = checkWinner(nextMoves, 3, 3)
-  //console.log(winner)
 
   if (winner != null) {
-    //console.log("\nwinner", winner)
     //print2d(nextMoves)
+    //console.log("\treturning winner", winner)
+
     switch(winner) {
       case winTypes.AI:
           // AI wins
@@ -83,6 +86,7 @@ function recurseMinimax(nextMoves, player) {
   } else {
     // Next states
     let nextVal = null, nextBoard = null
+    //(nextMoves)
 
     for (let i = 0; i < nextMoves.length; i++) {
       for (let j = 0; j < nextMoves[i].length; j++) {
@@ -91,34 +95,45 @@ function recurseMinimax(nextMoves, player) {
                 nextMoves[i][j] = player
 
                 let b = recurseMinimax(nextMoves, players.getOtherPlayer(player))
+                //console.log("result:")
                 //print2d(b[1])
 
                 let value = b[0]
 
-                // hard
-                
-                if ((player === players.AI && (nextVal == null || value > nextVal)) ||
-                  (player === players.PLAYER && (nextVal == null || value < nextVal))) {
-                    nextBoard = nextMoves.map(r => [...r])
-                    nextVal = value
+                switch(difficulty) {
+                  case HARD:
+                    console.log("hard")
+                    if ((player === players.AI && (nextVal == null || value > nextVal)) ||
+                      (player === players.PLAYER && (nextVal == null || value < nextVal))) {
+                        //console.log("player", player)
+                        //console.log("value", value)
+                        nextBoard = nextMoves.map(r => [...r])
+                        nextVal = value
+                    }
+                    break
+                  case MEDIUM:
+                    if ((player === players.AI && (nextVal == null || value != nextVal)) ||
+                      (player === players.PLAYER && (nextVal == null || value != nextVal))) {
+                        nextBoard = nextMoves.map(r => [...r])
+                        nextVal = value
+                    }
+                    break
+                  case EASY:
+                    if ((player === players.AI && (nextVal == null || value < nextVal)) ||
+                      (player === players.PLAYER && (nextVal == null || value > nextVal))) {
+                        nextBoard = nextMoves.map(r => [...r])
+                        nextVal = value
+                    }
+                    break
                 }
-
-
-                // easy
-
-                /*
-                if ((player === players.AI && (nextVal == null || value < nextVal)) ||
-                  (player === players.PLAYER && (nextVal == null || value > nextVal))) {
-                    nextBoard = nextMoves.map(r => [...r])
-                    nextVal = value
-                }
-                */
 
                 nextMoves[i][j] = null
             }
         }
     }
 
+    //console.log("returning", nextVal, nextBoard)
+    //console.log("\n")
     return [nextVal, nextBoard];
   }
 }

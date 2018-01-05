@@ -29,7 +29,8 @@ const _getInitialState = () => ({
   gamePhase: PLAY,
   players: plrs.asObj,
   currPlayer: plrs.PLAYER,
-  difficulty: HARD
+  difficulty: HARD,
+  aiMistakeProbability: 0.00,
 })
 
 class TicTacToe extends React.Component {
@@ -43,6 +44,7 @@ class TicTacToe extends React.Component {
       this._getCurrentMessage = this._getCurrentMessage.bind(this)
       this._isBoardDisabled = this._isBoardDisabled.bind(this)
       this._maybeMoveAI = this._maybeMoveAI.bind(this)
+      this._setDifficulty = this._setDifficulty.bind(this)
   }
 
   componentDidUpdate() {
@@ -77,7 +79,7 @@ class TicTacToe extends React.Component {
       return
     }
 
-    const {row, col} = AI.play(this.state.moves, difficulty)
+    const {row, col} = AI.play(this.state.moves, difficulty, currPlayer, this.state.aiMistakeProbability)
 
     setTimeout(() => {
       this._insertMove(row, col)
@@ -160,8 +162,31 @@ class TicTacToe extends React.Component {
     return gamePhase === WIN || gamePhase === DRAW || currPlayer === plrs.AI
   }
 
+  _setDifficulty(difficulty) {
+    console.log("setting difficulty to ", difficulty)
+    this.setState({
+      difficulty: difficulty
+    })
+  }
+
   render() {
     const { rows, cols, moves } = this.state
+    let easyToggleClass = 'easy-toggle',
+      mediumToggleClass = 'medium-toggle',
+      hardToggleClass = 'hard-toggle'
+
+    switch(this.state.difficulty) {
+      case EASY:
+        easyToggleClass += ' selected'
+        break
+      case MEDIUM:
+        mediumToggleClass += ' selected'
+        break
+      case HARD:
+        hardToggleClass += ' selected'
+        break
+    }
+
     return (
       <div className='tic-tac-toe'>
         <div className='ttt-left-col'>
@@ -175,6 +200,12 @@ class TicTacToe extends React.Component {
         </div>
         <div className='ttt-right-col'>
           <div className='message-box'>
+            <div className='difficulty-button-row'>
+              <div className={easyToggleClass} onClick={(e) => { this._setDifficulty(EASY)}}>Easy</div>
+              <div className={mediumToggleClass} onClick={(e) => {this._setDifficulty(MEDIUM)}}>Medium</div>
+              <div className={hardToggleClass} onClick={(e) => {this._setDifficulty(HARD)}}>Hard</div>
+            </div>
+
             <div>{this._getCurrentMessage()}</div>
           </div>
         </div>

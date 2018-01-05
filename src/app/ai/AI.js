@@ -2,24 +2,6 @@ import { checkWinner, winTypes } from '../util/winUtils.js'
 import * as players from '../constants/players.js'
 import { EASY, MEDIUM, HARD } from '../constants/difficultyLevels.js'
 
-export const easy = nextMoves => {
-  let row = 0, col = 0
-  let emptyMoves = []
-  //console.log(nextMoves)
-  for (let i = 0; i < nextMoves.length; i++) {
-    for (let j = 0; j < nextMoves[i].length; j++) {
-      //console.log(nextMoves[i][j])
-      if (nextMoves[i][j] === null) {
-        emptyMoves.push({
-          row: i,
-          col: j
-        })
-      }
-    }
-  }
-
-  return emptyMoves[Math.floor(Math.random() * emptyMoves.length)]
-}
 
 const print2d = a => {
   let print = ''
@@ -36,21 +18,37 @@ const print2d = a => {
   console.log(print)
 }
 
-export const play = (moves, difficulty) => {
-  const mm = recurseMinimax(moves.map(r => [...r]), players.AI, difficulty)
+
+
+let _mistakeSamples = []
+
+
+/**
+*
+*
+* @param {array<array<number>>} moves 2D array representing the board
+* @param {number} difficulty
+* @param {number} player
+* @param {number} mistakeProbability
+*/
+export const play = (moves, difficulty, player=players.AI, mistakeProbability=0) => {
+
+  if (mistakeProbability > 0) {
+    const mistakes = mistakeProbability * 100
+    _mistakeSamples = [].concat(
+      _.fill(Array(mistakes), true),
+      _.fill(Array(100 - mistakes), false)
+    )
+  }
+
+
+  const mm = recurseMinimax(moves.map(r => [...r]), player, difficulty, 0, mistakeProbability > 0)
+  console.log("minMax", mm)
   const nextMoves = mm[1]
-
-
-
-  //console.log("\nmoves")
-  //print2d(moves)
-  //console.log("nextMoves")
-  //print2d(nextMoves)
 
   for (let i = 0; i < nextMoves.length; i++) {
     for (let j = 0; j < nextMoves[i].length; j++) {
       if (moves[i][j] !== nextMoves[i][j]) {
-        console.log("diff", i, j)
         return {
           row: i,
           col: j
@@ -58,35 +56,36 @@ export const play = (moves, difficulty) => {
       }
     }
   }
-
-  //console.log("iet shouldnt get here")
-
-    //throw("it shouldn't get here!")
 }
 
+/**
+* The main minimax recursion function.  This is a vairation on the standard
+* minimax algorithm used for TicTacToe AIs to handle difficulty levels and the
+* introduction of a randomization seed such that a difficulty level of "HARD"
+* is no impossible to win -- the computer will make mistakes an arbitrarily low
+* percentage of the time.  The opposite holds true for EASY mode.
+*
+* @param {array<array<number>>} nextMoves 2D array representing the board
+*   populated with 1s, -1s and nulls
+* @param {number} player The player, either 1 (the AI) or -1 (the player)
+* @param {number} difficulty The enumerated difficulty level
+* @param {number} depth The depth tracker, to weight the win and minimize the
+*   amount of moves
+*/
+function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, depth=0, allowMistakes=false) {
 
-function recurseMinimax(nextMoves, player, difficulty, depth=0) {
   const winner = checkWinner(nextMoves, 3, 3)
 
   if (winner != null) {
-    //print2d(nextMoves)
-    //console.log("\treturning winner", winner)
-
-    switch(winner) {
-      case winTypes.AI:
-          // AI wins
-          return [1, nextMoves]
-      case winTypes.PLAYER:
-          // opponent wins
-          return [-1, nextMoves]
-      case winTypes.DRAW:
-          // Tie
-          return [0, nextMoves]
+    if (winner > 0) { // Player wins
+      return [10 - depth, nextMoves]
+    } else if (winner < 0) { // Opponent wins
+      return [depth - 10, nextMoves]
+    } else { // Draw
+      return [0, nextMoves]
     }
   } else {
-    // Next states
     let nextVal = null, nextBoard = null
-    //(nextMoves)
 
     for (let i = 0; i < nextMoves.length; i++) {
       for (let j = 0; j < nextMoves[i].length; j++) {
@@ -94,38 +93,71 @@ function recurseMinimax(nextMoves, player, difficulty, depth=0) {
             if (nextMoves[i][j] === null) {
                 nextMoves[i][j] = player
 
-                let b = recurseMinimax(nextMoves, players.getOtherPlayer(player), difficulty, depth++)
-                //console.log("result:")
-                //print2d(b[1])
+                const b = recurseMinimax(nextMoves, players.getOtherPlayer(player), difficulty, depth++, allowMistakes)
+                const value = b[0]
+                const isMore = value > nextVal
+                const isLess = value < nextVal
+                const isNotEqual = value != nextVal
 
-                let value = b[0]
+                // Experimental -- allow mistakes
+                const isMistake = allowMistakes && _mistakeSamples && _mistakeSamples.length > 0 && _.sample(_mistakeSamples)
 
+                if (isMistake) {
+                  //console.log(`Mistake triggered! ${difficulty} is changing to:`)
+                  switch(difficulty) {
+                    case HARD:
+                      difficulty = _.sample([EASY, MEDIUM])
+                      break
+                    case MEDIUM:
+                      difficulty = _.sample([EASY, HARD])
+
+                      break
+                    case EASY:
+                      difficulty = _.sample([MEDIUM, HARD])
+                      break
+                    default:
+                      throw(`Invalid difficulty ${difficulty}`)
+                  }
+                  //console.log(`${difficulty}\n`)
+                }
+
+                let posPlayerGate, negPlayerGate
+
+                // Boolean switching to accommodate difficulties
                 switch(difficulty) {
                   case HARD:
-                    if ((player === players.AI && (nextVal == null || value > nextVal)) ||
-                      (player === players.PLAYER && (nextVal == null || value < nextVal))) {
-                        //console.log("player", player)
-                        //console.log("value", value)
-                        nextBoard = nextMoves.map(r => [...r])
-                        nextVal = value
-                    }
+                    /*
+                    * In hard mode,  the intention is for the AI to win;
+                    * we want the highest score for the positive player,
+                    * and lowest score for the negative player
+                    */
+                    posPlayerGate = isMore
+                    negPlayerGate = isLess
                     break
                   case MEDIUM:
-                    if ((player === players.AI && (nextVal == null || value != nextVal)) ||
-                      (player === players.PLAYER && (nextVal == null || value != nextVal))) {
-                        nextBoard = nextMoves.map(r => [...r])
-                        nextVal = value
-                    }
+                    /*
+                    * In medium mode,
+                    */
+                    posPlayerGate = isNotEqual
+                    negPlayerGate = isNotEqual
                     break
                   case EASY:
-                    if ((player === players.AI && (nextVal == null || value < nextVal)) ||
-                      (player === players.PLAYER && (nextVal == null || value > nextVal))) {
-                        nextBoard = nextMoves.map(r => [...r])
-                        nextVal = value
-                    }
+                    /*
+                    * In easy mode, since the intention is for the AI to lose
+                    * we want the lowest score for the positive player,
+                    * and highest score for the negative player
+                    */
+                    posPlayerGate = isLess
+                    negPlayerGate = isMore
                     break
                   default:
                     throw(`Invalid difficulty ${difficulty}`)
+                }
+
+                if ((player > 0 && (nextVal == null || posPlayerGate)) ||
+                  (player < 0 && (nextVal == null || negPlayerGate))) {
+                    nextBoard = nextMoves.map(r => [...r])
+                    nextVal = value
                 }
 
                 nextMoves[i][j] = null
@@ -133,8 +165,6 @@ function recurseMinimax(nextMoves, player, difficulty, depth=0) {
         }
     }
 
-    //console.log("returning", nextVal, nextBoard)
-    //console.log("\n")
-    return [nextVal, nextBoard];
+    return [nextVal, nextBoard]
   }
 }

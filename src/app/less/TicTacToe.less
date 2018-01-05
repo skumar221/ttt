@@ -49,6 +49,41 @@
       font-size: 20px;
       font-family: sans-serif;
       color: black;
+
+      .difficulty-button-row {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 33% 33% 33%;
+        grid-gap: 5px;
+
+        .button {
+          cursor: pointer;
+          background-color: white;
+          padding: 5px;
+          border: solid 1px gray;
+          border-radius: 5px;
+          text-align: center;
+
+          &.selected {
+            background-color: rgb(200, 200, 200);
+          }
+        }
+
+        .easy-toggle {
+          .button;
+          grid-column: 1;
+        }
+
+        .medium-toggle {
+          .button;
+          grid-column: 2;
+        }
+
+        .hard-toggle {
+          .button;
+          grid-column: 3;
+        }
+      }
     }
   }
 

@@ -2,7 +2,7 @@ import React from 'react'
 import _ from 'lodash'
 import Board from '../functional-components/Board.jsx'
 
-import { PLAY, WIN, DRAW } from '../constants/gamePhases.js'
+import { PLAY, WIN, DRAW, REPLAY } from '../constants/gamePhases.js'
 
 import { checkWinner } from '../util/winUtils.js'
 
@@ -11,7 +11,7 @@ import * as plrs from '../constants/players.js'
 import { EASY, MEDIUM, HARD } from '../constants/difficultyLevels.js'
 import * as AI from '../ai/AI.js'
 
-const _generateEmptyMoves = (rows, cols) => {
+const _generateEmptyMoves = (rows=3, cols=3) => {
   let i = 0, moves = []
   while (i < rows) {
     moves.push(_.fill(Array(cols), null))
@@ -54,7 +54,7 @@ class TicTacToe extends React.Component {
   componentDidUpdate() {
     const { rows, cols, moves, moveHistory, currPlayer, gamePhase, difficulty} = this.state
 
-    if (gamePhase !== PLAY || gamePhase !== REPLAY) {
+    if (gamePhase !== PLAY) {
       return
     }
 
@@ -115,7 +115,32 @@ class TicTacToe extends React.Component {
 
   _replayGame() {
     this.setState({
-      gamePhase: REPLAY
+      gamePhase: REPLAY,
+      moves: _generateEmptyMoves(),
+    }, () => {
+      const mh = [...this.state.moveHistory]
+      let moves = _generateEmptyMoves(), i = 0
+
+      const interval = setInterval(() => {
+        console.log(i, mh.length)
+        if (i === mh.length) {
+          setTimeout(() => {
+            clearInterval(interval)
+            this._reset()
+          }, 1000)
+          return
+        }
+
+        let moves = this.state.moves
+        const move = mh[i]
+        moves[move.row][move.col] = move.player
+
+        this.setState({
+          moves: moves
+        })
+
+        i++
+      }, 1000)
     })
   }
 
@@ -161,6 +186,11 @@ class TicTacToe extends React.Component {
           <div className='instant-replay-button' onClick={() => {this._replayGame()}}>Replay game</div>
         ]
         break
+      case REPLAY:
+        msg = [
+          <div>Replaying...</div>
+        ]
+        break
       default:
         msg = null
     }
@@ -174,7 +204,7 @@ class TicTacToe extends React.Component {
 
   _isBoardDisabled() {
     const { gamePhase, currPlayer } = this.state
-    return gamePhase === WIN || gamePhase === DRAW || currPlayer === plrs.AI
+    return gamePhase === WIN || gamePhase === DRAW || currPlayer === plrs.AI || gamePhase === REPLAY
   }
 
   _setDifficulty(difficulty) {
@@ -229,6 +259,8 @@ class TicTacToe extends React.Component {
 
   render() {
     const { rows, cols, moves } = this.state
+    console.log('moves', moves)
+
     return (
       <div className='tic-tac-toe'>
         <div className='ttt-left-col'>

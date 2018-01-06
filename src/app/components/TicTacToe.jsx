@@ -122,11 +122,10 @@ class TicTacToe extends React.Component {
       let moves = _generateEmptyMoves(), i = 0
 
       const interval = setInterval(() => {
-        console.log(i, mh.length)
         if (i === mh.length) {
           setTimeout(() => {
             clearInterval(interval)
-            this._reset()
+            this._onGameWon()
           }, 1000)
           return
         }
@@ -174,14 +173,14 @@ class TicTacToe extends React.Component {
         break
       case WIN:
         msg = [
-          <div>{`${otherPlayerName} wins!`}</div>,
+          <div className='message-text'>{`${otherPlayerName} wins!`}</div>,
           <div className='reset-button' onClick={() => {this._reset()}}>New Game</div>,
           <div className='instant-replay-button' onClick={() => {this._replayGame()}}>Replay game</div>
         ]
         break
       case DRAW:
         msg = [
-          <div>'Draw!'</div>,
+          <div className='message-text'>Draw!</div>,
           <div className='reset-button' onClick={() => {this._reset()}}>New Game</div>,
           <div className='instant-replay-button' onClick={() => {this._replayGame()}}>Replay game</div>
         ]
@@ -208,10 +207,15 @@ class TicTacToe extends React.Component {
   }
 
   _setDifficulty(difficulty) {
-    console.log("setting difficulty to ", difficulty)
+    const { gamePhase } = this.state
+
+    // Start a new game if toggling diffulty when game is over
+    let callback = (gamePhase === WIN || gamePhase === DRAW) ?
+      this._reset : _.noop
+
     this.setState({
       difficulty: difficulty
-    })
+    }, callback)
   }
 
   _renderGameControls() {

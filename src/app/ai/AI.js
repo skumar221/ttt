@@ -2,11 +2,15 @@ import { checkWinner, winTypes } from '../util/winUtils.js'
 import * as players from '../constants/players.js'
 import { EASY, MEDIUM, HARD } from '../constants/difficultyLevels.js'
 
-
-const print2d = a => {
+/**
+* Utility method to print the board.
+*
+* @param {array<array<number>>} board
+*/
+const print2d = board => {
   let print = ''
   const plrs = players.asObj
-  a.forEach(r => {
+  board.forEach(r => {
     let line = ''
     r.forEach(c => {
       // TODO make this more robust
@@ -19,30 +23,17 @@ const print2d = a => {
 }
 
 
-
-let _mistakeSamples = []
-
-
 /**
 *
 *
 * @param {array<array<number>>} moves 2D array representing the board
 * @param {number} difficulty
 * @param {number} player
-* @param {number} mistakeProbability
+* @param {number} mistakeProbability The probability that
 */
 export const play = (moves, difficulty, player=players.AI, mistakeProbability=0) => {
 
-  if (mistakeProbability > 0) {
-    const mistakes = mistakeProbability * 100
-    _mistakeSamples = [].concat(
-      _.fill(Array(mistakes), true),
-      _.fill(Array(100 - mistakes), false)
-    )
-  }
-
-
-  const mm = recurseMinimax(moves.map(r => [...r]), player, difficulty, 0, mistakeProbability > 0)
+  const mm = recurseMinimax(moves.map(r => [...r]), player, difficulty, 0, mistakeProbability)
   console.log("minMax", mm)
   const nextMoves = mm[1]
 
@@ -72,7 +63,7 @@ export const play = (moves, difficulty, player=players.AI, mistakeProbability=0)
 * @param {number} depth The depth tracker, to weight the win and minimize the
 *   amount of moves
 */
-function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, depth=0, allowMistakes=false) {
+function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, depth=0, mistakeProbability=0) {
 
   const winner = checkWinner(nextMoves, 3, 3)
 
@@ -93,14 +84,13 @@ function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, dep
             if (nextMoves[i][j] === null) {
                 nextMoves[i][j] = player
 
-                const b = recurseMinimax(nextMoves, players.getOtherPlayer(player), difficulty, depth++, allowMistakes)
+                const b = recurseMinimax(nextMoves, players.getOtherPlayer(player), difficulty, depth++, mistakeProbability)
                 const value = b[0]
                 const isMore = value > nextVal
                 const isLess = value < nextVal
                 const isNotEqual = value != nextVal
 
-                // Experimental -- allow mistakes
-                const isMistake = allowMistakes && _mistakeSamples && _mistakeSamples.length > 0 && _.sample(_mistakeSamples)
+                const isMistake = mistakeProbability > 0 && (_.random(1, 1000) <= (mistakeProbability * 1000))
 
                 if (isMistake) {
                   //console.log(`Mistake triggered! ${difficulty} is changing to:`)

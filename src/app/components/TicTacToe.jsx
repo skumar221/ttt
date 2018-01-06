@@ -45,12 +45,16 @@ class TicTacToe extends React.Component {
       this._isBoardDisabled = this._isBoardDisabled.bind(this)
       this._maybeMoveAI = this._maybeMoveAI.bind(this)
       this._setDifficulty = this._setDifficulty.bind(this)
+      this._renderDifficultyButtonRow = this._renderDifficultyButtonRow.bind(this)
+      this._renderGameControls = this._renderGameControls.bind(this)
+      this._renderOtherControls = this._renderOtherControls.bind(this)
+      this._replayGame = this._replayGame.bind(this)
   }
 
   componentDidUpdate() {
     const { rows, cols, moves, moveHistory, currPlayer, gamePhase, difficulty} = this.state
 
-    if (gamePhase !== PLAY) {
+    if (gamePhase !== PLAY || gamePhase !== REPLAY) {
       return
     }
 
@@ -100,20 +104,18 @@ class TicTacToe extends React.Component {
   _onGameDraw() {
     this.setState({
       gamePhase: DRAW
-    }, () => {
-      setTimeout(() => {
-        this._reset()
-      }, 3000)
     })
   }
 
   _onGameWon() {
     this.setState({
       gamePhase: WIN
-    }, () => {
-      setTimeout(() => {
-        this._reset()
-      }, 3000)
+    })
+  }
+
+  _replayGame() {
+    this.setState({
+      gamePhase: REPLAY
     })
   }
 
@@ -137,24 +139,37 @@ class TicTacToe extends React.Component {
     const playerName = this.state.players[currPlayer].name
     const otherPlayerName = this.state.players[plrs.getOtherPlayer(currPlayer)].name
 
+    let msg
     switch(gamePhase) {
       case PLAY:
-        let msg =  `The current player is "${playerName}".`
+        msg =  `The current player is "${playerName}".`
         if (currPlayer === plrs.AI) {
           msg += ' (AI)'
         }
-        return msg
         break
       case WIN:
-        return `${otherPlayerName} wins!`
+        msg = [
+          <div>{`${otherPlayerName} wins!`}</div>,
+          <div className='reset-button' onClick={() => {this._reset()}}>New Game</div>,
+          <div className='instant-replay-button' onClick={() => {this._replayGame()}}>Replay game</div>
+        ]
         break
       case DRAW:
-        return `Draw!`
+        msg = [
+          <div>'Draw!'</div>,
+          <div className='reset-button' onClick={() => {this._reset()}}>New Game</div>,
+          <div className='instant-replay-button' onClick={() => {this._replayGame()}}>Replay game</div>
+        ]
         break
       default:
-        return ''
-        break
+        msg = null
     }
+
+    return (
+      <div className='message'>
+        {msg}
+      </div>
+    )
   }
 
   _isBoardDisabled() {
@@ -169,8 +184,24 @@ class TicTacToe extends React.Component {
     })
   }
 
-  render() {
-    const { rows, cols, moves } = this.state
+  _renderGameControls() {
+    return (
+      <div className='game-controls'>
+        {this._renderDifficultyButtonRow()}
+        {this._renderOtherControls()}
+      </div>
+    )
+  }
+
+  _renderOtherControls() {
+    return (
+      <div className='other-controls'>
+        Other controls
+      </div>
+    )
+  }
+
+  _renderDifficultyButtonRow() {
     let easyToggleClass = 'easy-toggle',
       mediumToggleClass = 'medium-toggle',
       hardToggleClass = 'hard-toggle'
@@ -187,6 +218,17 @@ class TicTacToe extends React.Component {
         break
     }
 
+    return [
+      <div className='difficulty-button-row'>
+        <div className={easyToggleClass} onClick={(e) => { this._setDifficulty(EASY)}}>Easy</div>
+        <div className={mediumToggleClass} onClick={(e) => {this._setDifficulty(MEDIUM)}}>Medium</div>
+        <div className={hardToggleClass} onClick={(e) => {this._setDifficulty(HARD)}}>Hard</div>
+      </div>
+    ]
+  }
+
+  render() {
+    const { rows, cols, moves } = this.state
     return (
       <div className='tic-tac-toe'>
         <div className='ttt-left-col'>
@@ -200,13 +242,8 @@ class TicTacToe extends React.Component {
         </div>
         <div className='ttt-right-col'>
           <div className='message-box'>
-            <div className='difficulty-button-row'>
-              <div className={easyToggleClass} onClick={(e) => { this._setDifficulty(EASY)}}>Easy</div>
-              <div className={mediumToggleClass} onClick={(e) => {this._setDifficulty(MEDIUM)}}>Medium</div>
-              <div className={hardToggleClass} onClick={(e) => {this._setDifficulty(HARD)}}>Hard</div>
-            </div>
-
-            <div>{this._getCurrentMessage()}</div>
+            {this._renderGameControls()}
+            {this._getCurrentMessage()}
           </div>
         </div>
       </div>

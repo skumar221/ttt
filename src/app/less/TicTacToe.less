@@ -13,10 +13,11 @@
       display: grid;
       grid-gap: 10px;
       background-color: rgb(200, 200, 200);
-      border: solid 10px black;
+      border: solid 10px rgb(200, 200, 200);
       box-sizing: border-box;
       height: 100%;
       width: 100%;
+      border-radius: 10px;
 
       .ttt-cell {
         box-sizing: border-box;
@@ -31,10 +32,10 @@
         align-items: center;
         text-align: center;
         justify-content: center;
+        border-radius: 10px;
 
         &:hover {
-          background-color: rgba(220, 220, 220, 1);
-          transition: background-color .5s;
+          background-color: rgb(245, 245, 245);
         }
       }
     }
@@ -43,47 +44,77 @@
   .ttt-right-col {
     grid-column: 2;
     box-sizing: border-box;
-    border: solid 1px blue;
+
     .message-box {
       padding: 10px;
       font-size: 20px;
       font-family: sans-serif;
       color: black;
 
-      .difficulty-button-row {
-        width: 100%;
-        display: grid;
-        grid-template-columns: 33% 33% 33%;
-        grid-gap: 5px;
+      .button {
+        cursor: pointer;
+        background-color: white;
+        padding: 5px;
+        border: solid 1px rgb(220, 220, 220);
+        border-radius: 5px;
+        text-align: center;
 
-        .button {
-          cursor: pointer;
-          background-color: white;
-          padding: 5px;
-          border: solid 1px gray;
-          border-radius: 5px;
-          text-align: center;
-
-          &.selected {
-            background-color: rgb(200, 200, 200);
-          }
+        &:hover {
+          transition: .2s all;
+          border: solid 1px rgb(120, 120, 120);
         }
 
-        .easy-toggle {
-          .button;
-          grid-column: 1;
-        }
-
-        .medium-toggle {
-          .button;
-          grid-column: 2;
-        }
-
-        .hard-toggle {
-          .button;
-          grid-column: 3;
+        &.selected {
+          background-color: #ffb347;
         }
       }
+
+
+      .message {
+        margin-top: 10px;
+        background-color: rgb(223, 223, 223);
+        height: 325px;
+        padding: 10px;
+
+        .reset-button {
+          .button;
+          background-color: #4793ff;
+          color: white;
+        }
+
+        .instant-replay-button {
+          .button;
+          background-color: #47ffb3;
+          color: white;
+        }
+      }
+
+      .game-controls {
+        width: 100%;
+
+        .difficulty-button-row {
+          width: 100%;
+          display: grid;
+          grid-template-columns: 33% 33% 33%;
+          grid-gap: 5px;
+
+          .easy-toggle {
+            .button;
+            grid-column: 1;
+          }
+
+          .medium-toggle {
+            .button;
+            grid-column: 2;
+          }
+
+          .hard-toggle {
+            .button;
+            grid-column: 3;
+          }
+        }
+      }
+
     }
   }
 

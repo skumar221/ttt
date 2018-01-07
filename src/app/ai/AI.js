@@ -69,11 +69,11 @@ function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, dep
 
   if (winner != null) {
     if (winner > 0) { // Player wins
-      //return [10 - depth, nextMoves]
-      return [1, nextMoves]
+      return [10 - depth, nextMoves]
+      //return [1, nextMoves]
     } else if (winner < 0) { // Opponent wins
-      //return [depth - 10, nextMoves]
-      return [-1, nextMoves]
+      return [depth - 10, nextMoves]
+      //return [-1, nextMoves]
     } else { // Draw
       return [0, nextMoves]
     }
@@ -86,7 +86,7 @@ function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, dep
             if (nextMoves[i][j] === null) {
                 nextMoves[i][j] = player
 
-                const b = recurseMinimax(nextMoves, players.getOtherPlayer(player), difficulty, depth++, mistakeProbability)
+                const b = recurseMinimax(nextMoves, players.getOtherPlayer(player), difficulty, ++depth, mistakeProbability)
                 const value = b[0]
                 const isMore = value > nextVal
                 const isLess = value < nextVal

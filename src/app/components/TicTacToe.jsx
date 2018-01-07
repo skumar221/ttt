@@ -24,13 +24,14 @@ const _generateEmptyMoves = (rows=3, cols=3) => {
 const _getInitialState = () => ({
   rows: 3,
   cols: 3,
-  moves: _generateEmptyMoves(3, 3), //[[-1, 1, 1], [-1, -1, 1], [null, null, null]],
+  moves: _generateEmptyMoves(3, 3), //[[-1, 1, null], [null, -1, 1], [null, null, null]],
   moveHistory: [],
   gamePhase: PLAY,
   players: plrs.asObj,
   currPlayer: plrs.PLAYER,
   difficulty: HARD,
   aiMistakeProbability: 0.00,
+  hint: null
 })
 
 class TicTacToe extends React.Component {
@@ -93,7 +94,8 @@ class TicTacToe extends React.Component {
   _reset() {
     this.setState({
       ..._getInitialState(),
-      difficulty: this.state.difficulty
+      difficulty: this.state.difficulty,
+      aiMistakeProbability: this.state.aiMistakeProbability
     })
   }
 
@@ -228,9 +230,42 @@ class TicTacToe extends React.Component {
   }
 
   _renderOtherControls() {
+    const _onMistakeProbabilityChange = e => {
+      this.setState({
+        aiMistakeProbability: parseFloat(e.target.value)
+      })
+    }
+    const { gamePhase, currPlayer } = this.state
+
+    const _onHintClicked = e => {
+      e.stopPropagation()
+      if (!(currPlayer === plrs.PLAYER && gamePhase === PLAY)) {
+        return
+      }
+
+      const {row, col} = AI.play(this.state.moves, HARD, plrs.PLAYER, 0)
+      this.setState({
+        hint: {
+          row: row,
+          col: col,
+          player: plrs.PLAYER
+        }
+      }, () => {
+        setTimeout(() => {
+          this.setState({
+            hint: null
+          })
+        }, 1000)
+      })
+    }
+
     return (
       <div className='other-controls'>
-        Other controls
+        AI Mistake Probability
+        <input type="number" step="0.001" min="0" max="1"
+          value={this.state.aiMistakeProbability.toString()}
+          onChange={_onMistakeProbabilityChange} />
+        <div className='hint-button' onClick={_onHintClicked} >Hint</div>
       </div>
     )
   }
@@ -274,7 +309,8 @@ class TicTacToe extends React.Component {
             moves={moves}
             disabled={this._isBoardDisabled()}
             players={this.state.players}
-            onCellClicked={this._onCellClicked} />
+            onCellClicked={this._onCellClicked}
+            hint={this.state.hint} />
         </div>
         <div className='ttt-right-col'>
           <div className='message-box'>

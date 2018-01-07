@@ -20,7 +20,8 @@ const makeRow = (props, rowInd) => {
         player = _.get(props.players, `${move}`)
 
       let click = _.noop,
-        inner = ''
+        inner = '',
+        isHint = false
 
       if (move === null && !props.disabled) {
         const col = i
@@ -28,17 +29,36 @@ const makeRow = (props, rowInd) => {
           e.stopPropagation()
           props.onCellClicked(rowInd, col)
         }
+
+        if (props.hint) {
+          const hintCol = _.get(props.hint, 'col')
+          const hintRow = _.get(props.hint, 'row')
+
+          if (hintCol === i && hintRow == rowInd) {
+            inner = _.get(_.get(props.players, _.get(props.hint, 'player')), `symbol`)
+            isHint = true
+          }
+        }
+
       } else if (move !== null) {
         inner = _.get(player, `symbol`)
       }
 
-      const style = {
+      let style = {
         'gridArea': `${rowInd + 1} / ${i + 1} / ${rowInd + 2} / ${i + 2}`,
-        'color': `${_.get(player, `color`)}`
+      }
+
+      if (!isHint) {
+        style.color = `${_.get(player, `color`)}`
+      }
+
+      let className = 'ttt-cell'
+      if (isHint) {
+        className += ' hint-jitter'
       }
 
       cells.push(
-        <div key={id} id={id} className='ttt-cell' onClick={click} style={style}>
+        <div key={id} id={id} className={className} onClick={click} style={style}>
           {inner}
         </div>
       )
@@ -60,5 +80,13 @@ const Board = props => {
     </div>
   )
 }
+
+// TODO: Need proptypes here?
+/*
+propTypes = {
+hint: ,
+moves: ,
+}
+*/
 
 export default Board;

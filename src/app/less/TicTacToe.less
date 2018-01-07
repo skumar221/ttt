@@ -34,6 +34,11 @@
         justify-content: center;
         border-radius: 10px;
 
+        &.hint-jitter {
+          .shake-anim;
+          color: rgb(200, 200, 200)
+        }
+
         &:hover {
           background-color: rgb(245, 245, 245);
         }
@@ -51,54 +56,28 @@
       font-family: sans-serif;
       color: black;
 
-      .button {
-        cursor: pointer;
-        background-color: white;
-        padding: 5px;
-        border: solid 1px rgb(220, 220, 220);
-        border-radius: 5px;
-        text-align: center;
-
-        &:hover {
-          transition: .2s all;
-          border: solid 1px rgb(120, 120, 120);
-        }
-
-        &.selected {
-          background-color: #ffb347;
-        }
-      }
-
-
       .message {
         margin-top: 10px;
         background-color: rgb(223, 223, 223);
         height: 325px;
         padding: 10px;
 
-        .anim {
-          animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
-          transform: translate3d(0, 0, 0);
-          backface-visibility: hidden;
-          perspective: 1000px;
-        }
-
         .message-text {
-          .anim;
+          .shake-anim;
         }
 
         .reset-button {
           .button;
           background-color: #4793ff;
           color: white;
-          .anim;
+          .shake-anim;
         }
 
         .instant-replay-button {
           .button;
           background-color: #47ffb3;
           color: white;
-          .anim;
+          .shake-anim;
         }
       }
 
@@ -126,11 +105,50 @@
             grid-column: 3;
           }
         }
+
+        .other-controls {
+          margin-top: 10px;
+          input {
+            margin-top: -5px;
+            margin-left: 5px;
+          }
+          .hint-button {
+            margin-top: 10px;
+            .button;
+            width: 100px;
+            background-color: #99FFFF;
+          }
+        }
       }
 
     }
   }
 
+}
+
+.button {
+  cursor: pointer;
+  background-color: white;
+  padding: 5px;
+  border: solid 1px rgb(220, 220, 220);
+  border-radius: 5px;
+  text-align: center;
+
+  &:hover {
+    transition: .2s all;
+    border: solid 1px rgb(120, 120, 120);
+  }
+
+  &.selected {
+    background-color: #ffb347;
+  }
+}
+
+.shake-anim {
+  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 @keyframes shake {

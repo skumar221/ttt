@@ -69,11 +69,11 @@ function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, dep
 
   if (winner != null) {
     if (winner > 0) { // Player wins
-      return [10 - depth, nextMoves]
-      //return [1, nextMoves]
+      //return [10 - depth, nextMoves]
+      return [1, nextMoves]
     } else if (winner < 0) { // Opponent wins
-      return [depth - 10, nextMoves]
-      //return [-1, nextMoves]
+      //return [depth - 10, nextMoves]
+      return [-1, nextMoves]
     } else { // Draw
       return [0, nextMoves]
     }

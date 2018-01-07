@@ -2,26 +2,43 @@ import _ from 'lodash'
 
 export const DRAW = 0
 export const AI = 1
-export const PLAYER = -1
+export const HUMAN = -1
 
 export const winTypes = {
   DRAW,
   AI,
-  PLAYER,
+  HUMAN,
 }
 
+/**
+* Returns the winner based on a given sum of a row, col or diagonal
+*
+* @param {number} sum
+*
+* @return {number | null} the enumerated winner
+*/
 export const getWinnerBySum = sum => {
   switch (sum) {
     case -3:
-      return PLAYER
+      return HUMAN
     case 3:
       return AI
+    default:
+      return null
   }
 }
 
 /**
+* Checks the winner of a board using the enumerated values of players (AI or human).
+* Returns a number representation of who whon using the 'getWinnerBySum' method above.
+* If it's a draw, returns the DRAW enumeration.  If no winner yet, returns null.
 *
-* @return {number | null}
+* @param {array<array<number | null>>} board
+* @param {number} rows
+* @param {number} cols
+*
+* @return {number | null} The enumerated player who won (AI or human),
+*   DRAW enumeration, or null for no winner yet.
 */
 export const checkWinner = (board, rows=3, cols=3) => {
 

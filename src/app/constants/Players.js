@@ -1,9 +1,9 @@
-export const PLAYER = -1
+export const HUMAN = -1
 export const AI = 1
-export const getOtherPlayer = p => p === AI ? PLAYER : AI
+export const getOtherPlayer = p => p === AI ? HUMAN : AI
 
 export const asObj = {
-  [PLAYER]: {
+  [HUMAN]: {
     name: 'Player',
     symbol: 'X',
     color: '#663399',

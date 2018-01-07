@@ -1,23 +1,26 @@
 import React from 'react'
 import _ from 'lodash'
 import Board from '../functional-components/Board.jsx'
-
+import * as plrs from '../constants/players.js'
+import * as AI from '../ai/AI.js'
 import { PLAY, WIN, DRAW, REPLAY } from '../constants/gamePhases.js'
-
+import { EASY, MEDIUM, HARD } from '../constants/difficultyLevels.js'
 import { checkWinner } from '../util/winUtils.js'
 
-import * as plrs from '../constants/players.js'
-
-import { EASY, MEDIUM, HARD } from '../constants/difficultyLevels.js'
-import * as AI from '../ai/AI.js'
-
+/**
+* Returns a null-filled 2D array that represents the TTT board
+*
+* @param {number} rows
+* @param {number} cols
+*
+* @return {array<array<null>>}
+*/
 const _generateEmptyMoves = (rows=3, cols=3) => {
   let i = 0, moves = []
   while (i < rows) {
     moves.push(_.fill(Array(cols), null))
     i++
   }
-
   return moves
 }
 
@@ -28,7 +31,7 @@ const _getInitialState = () => ({
   moveHistory: [],
   gamePhase: PLAY,
   players: plrs.asObj,
-  currPlayer: plrs.PLAYER,
+  currPlayer: plrs.HUMAN,
   difficulty: HARD,
   aiMistakeProbability: 0.00,
   hint: null
@@ -39,10 +42,9 @@ class TicTacToe extends React.Component {
       super(props)
       this.state = _getInitialState()
 
-      this._onCellClicked = this._onCellClicked.bind(this)
       this._insertMove = this._insertMove.bind(this)
       this._onGameWon = this._onGameWon.bind(this)
-      this._getCurrentMessage = this._getCurrentMessage.bind(this)
+      this._renderMessageBox = this._renderMessageBox.bind(this)
       this._isBoardDisabled = this._isBoardDisabled.bind(this)
       this._maybeMoveAI = this._maybeMoveAI.bind(this)
       this._setDifficulty = this._setDifficulty.bind(this)
@@ -50,20 +52,48 @@ class TicTacToe extends React.Component {
       this._renderGameControls = this._renderGameControls.bind(this)
       this._renderOtherControls = this._renderOtherControls.bind(this)
       this._replayGame = this._replayGame.bind(this)
+      this._maybeFinishGame = this._maybeFinishGame.bind(this)
   }
 
   componentDidUpdate() {
-    const { rows, cols, moves, moveHistory, currPlayer, gamePhase, difficulty} = this.state
+    this._maybeFinishGame()
+  }
 
-    if (gamePhase !== PLAY) {
+  render() {
+    const { rows, cols, moves } = this.state
+    return (
+      <div className='tic-tac-toe'>
+        <div className='ttt-left-col'>
+          <Board
+            rows={rows}
+            cols={cols}
+            moves={moves}
+            disabled={this._isBoardDisabled()}
+            players={this.state.players}
+            onCellClicked={this._insertMove}
+            hint={this.state.hint} />
+        </div>
+        <div className='ttt-right-col'>
+          <div className='message-box'>
+            {this._renderGameControls()}
+            {this._renderMessageBox()}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  _maybeFinishGame(replayOK = false) {
+    const { rows, cols, moves, gamePhase } = this.state
+
+    if (gamePhase !== PLAY && replayOK === false) {
       return
     }
 
     const winner = checkWinner(moves, rows, cols)
-
     switch (winner) {
       case null:
-        this._maybeMoveAI(currPlayer, gamePhase, difficulty)
+        this._maybeMoveAI()
         break
       case 0:
         this._onGameDraw()
@@ -75,32 +105,32 @@ class TicTacToe extends React.Component {
   }
 
   /**
-  * @param {number} currPlayer
-  * @param {number} gamePhase
-  * @param {number} difficulty
+  * Create a move for the AI if the currentPlayer is the AI
+  * and game phase is play.
   */
-  _maybeMoveAI(currPlayer, gamePhase, difficulty) {
+  _maybeMoveAI() {
+    const { currPlayer, gamePhase, difficulty} = this.state
     if (currPlayer !== plrs.AI || gamePhase !== PLAY) {
       return
     }
 
     const {row, col} = AI.play(this.state.moves, difficulty, currPlayer, this.state.aiMistakeProbability)
 
+    //Slight delay for playing the AI so it doesn't feel so robotic
     setTimeout(() => {
       this._insertMove(row, col)
-    }, 500)
+    }, 300)
   }
 
+  /**
+  * Reset the game, retaining difficulty and aiMistakeProbability settings.
+  */
   _reset() {
     this.setState({
       ..._getInitialState(),
       difficulty: this.state.difficulty,
       aiMistakeProbability: this.state.aiMistakeProbability
     })
-  }
-
-  _onCellClicked(row, col) {
-    this._insertMove(row, col)
   }
 
   _onGameDraw() {
@@ -115,6 +145,10 @@ class TicTacToe extends React.Component {
     })
   }
 
+  /**
+  * Hijake for the REPLAY phase.  Uses a series of setTimeouts and setIntervals
+  * to replay the previous game.
+  */
   _replayGame() {
     this.setState({
       gamePhase: REPLAY,
@@ -125,10 +159,8 @@ class TicTacToe extends React.Component {
 
       const interval = setInterval(() => {
         if (i === mh.length) {
-          setTimeout(() => {
-            clearInterval(interval)
-            this._onGameWon()
-          }, 1000)
+          clearInterval(interval)
+          this._maybeFinishGame(true)
           return
         }
 
@@ -141,10 +173,17 @@ class TicTacToe extends React.Component {
         })
 
         i++
-      }, 1000)
+      }, 500)
     })
   }
 
+  /**
+  * Insert's a move with a given row and col, using state.currPlayer to determine
+  * who the move belongs to.
+  *
+  * @param {number} row
+  * @param {number} col
+  */
   _insertMove(row, col) {
     let { moves, moveHistory, currPlayer } = this.state
     moves[row][col] = currPlayer
@@ -160,7 +199,10 @@ class TicTacToe extends React.Component {
     })
   }
 
-  _getCurrentMessage() {
+  /**
+  * Renders the message box responsive to state.
+  */
+  _renderMessageBox() {
     const { players, currPlayer, moveHistory, gamePhase }  = this.state
     const playerName = this.state.players[currPlayer].name
     const otherPlayerName = this.state.players[plrs.getOtherPlayer(currPlayer)].name
@@ -229,6 +271,9 @@ class TicTacToe extends React.Component {
     )
   }
 
+  /**
+  * Renders the aiMistakeProbability input and hint buttons
+  */
   _renderOtherControls() {
     const _onMistakeProbabilityChange = e => {
       this.setState({
@@ -239,16 +284,16 @@ class TicTacToe extends React.Component {
 
     const _onHintClicked = e => {
       e.stopPropagation()
-      if (!(currPlayer === plrs.PLAYER && gamePhase === PLAY)) {
+      if (!(currPlayer === plrs.HUMAN && gamePhase === PLAY)) {
         return
       }
 
-      const {row, col} = AI.play(this.state.moves, HARD, plrs.PLAYER, 0)
+      const {row, col} = AI.play(this.state.moves, HARD, plrs.HUMAN, 0)
       this.setState({
         hint: {
           row: row,
           col: col,
-          player: plrs.PLAYER
+          player: plrs.HUMAN
         }
       }, () => {
         setTimeout(() => {
@@ -294,32 +339,6 @@ class TicTacToe extends React.Component {
         <div className={hardToggleClass} onClick={(e) => {this._setDifficulty(HARD)}}>Hard</div>
       </div>
     ]
-  }
-
-  render() {
-    const { rows, cols, moves } = this.state
-    console.log('moves', moves)
-
-    return (
-      <div className='tic-tac-toe'>
-        <div className='ttt-left-col'>
-          <Board
-            rows={rows}
-            cols={cols}
-            moves={moves}
-            disabled={this._isBoardDisabled()}
-            players={this.state.players}
-            onCellClicked={this._onCellClicked}
-            hint={this.state.hint} />
-        </div>
-        <div className='ttt-right-col'>
-          <div className='message-box'>
-            {this._renderGameControls()}
-            {this._getCurrentMessage()}
-          </div>
-        </div>
-      </div>
-    )
   }
 }
 

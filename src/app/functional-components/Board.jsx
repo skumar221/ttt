@@ -1,6 +1,13 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import _ from 'lodash'
 
+/**
+* Returns all of the boards elements.
+*
+* @param {object} props
+* @param {array<array<React.Element>>}
+*/
 const makeRows = props => {
   let i = 0, rows = []
   while (i < props.rows) {
@@ -11,6 +18,13 @@ const makeRows = props => {
   return rows
 }
 
+/**
+* Returns a row element with cells, populated and unpopulated.
+*
+* @param {object} props
+* @param {number} rowInd
+* @param {array<React.Element>}
+*/
 const makeRow = (props, rowInd) => {
     let i = 0, cells = []
 
@@ -69,6 +83,9 @@ const makeRow = (props, rowInd) => {
     return cells
 }
 
+/**
+* Functional component representing the TTT board
+*/
 const Board = props => {
   const style = {
     gridTemplateColumns: _.fill(Array(props.cols), '1fr').join(' '),
@@ -81,12 +98,14 @@ const Board = props => {
   )
 }
 
-// TODO: Need proptypes here?
-/*
-propTypes = {
-hint: ,
-moves: ,
+Board.propTypes = {
+  rows: PropTypes.number,
+  cols: PropTypes.number,
+  moves: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
+  disabled: PropTypes.bool,
+  players: PropTypes.object,
+  onCellClicked: PropTypes.func,
+  hint: PropTypes.object
 }
-*/
 
 export default Board;

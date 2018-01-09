@@ -42,6 +42,8 @@ export const play = (moves, difficulty, player=players.AI, mistakeProbability=0)
   const mm = recurseMinimax(moves.map(r => [...r]), player, difficulty, 0, mistakeProbability)
   const nextMoves = mm[1]
 
+  console.log("minimax", mm)
+
   for (let i = 0; i < nextMoves.length; i++) {
     for (let j = 0; j < nextMoves[i].length; j++) {
       if (moves[i][j] !== nextMoves[i][j]) {
@@ -83,11 +85,11 @@ function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, dep
   // predictable biases
   if (winner != null) {
     if (winner > 0) { // Player wins
-      //return [10 - depth, nextMoves]
-      return [1, nextMoves]
+      return [10 - depth, nextMoves]
+      //return [1, nextMoves]
     } else if (winner < 0) { // Opponent wins
-      //return [depth - 10, nextMoves]
-      return [-1, nextMoves]
+      return [depth - 10, nextMoves]
+      //return [-1, nextMoves]
     } else { // Draw
       return [0, nextMoves]
     }
@@ -101,7 +103,7 @@ function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, dep
                 nextMoves[i][j] = player
 
                 // Recursion hook
-                const b = recurseMinimax(nextMoves, players.getOtherPlayer(player), difficulty, ++depth, mistakeProbability)
+                const b = recurseMinimax(nextMoves, players.getOtherPlayer(player), difficulty, depth+1, mistakeProbability)
 
                 const value = b[0],
                   isMore = value > nextVal,

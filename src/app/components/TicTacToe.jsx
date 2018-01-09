@@ -270,21 +270,21 @@ class TicTacToe extends React.Component {
         break
       case WIN:
         msg = [
-          <div className='message-text'>{`${otherPlayerName} wins!`}</div>,
-          <div className='reset-button' onClick={() => {this._reset()}}>New Game</div>,
-          <div className='instant-replay-button' onClick={() => {this._replayGame()}}>Replay game</div>
+          <div className='message-text' key='win-msg'>{`${otherPlayerName} wins!`}</div>,
+          <div className='reset-button' key='new-game-button' onClick={() => {this._reset()}}>New Game</div>,
+          <div className='instant-replay-button' key='replay-win-button' onClick={() => {this._replayGame()}}>Replay game</div>
         ]
         break
       case DRAW:
         msg = [
-          <div className='message-text'>Draw!</div>,
-          <div className='reset-button' onClick={() => {this._reset()}}>New Game</div>,
-          <div className='instant-replay-button' onClick={() => {this._replayGame()}}>Replay game</div>
+          <div className='message-text' key='draw-button'>Draw!</div>,
+          <div className='reset-button' key='reset-button' onClick={() => {this._reset()}}>New Game</div>,
+          <div className='instant-replay-button' key='replay-button' onClick={() => {this._replayGame()}}>Replay game</div>
         ]
         break
       case REPLAY:
         msg = [
-          <div>Replaying...</div>
+          <div key='replay-text'>Replaying...</div>
         ]
         break
       default:
@@ -292,7 +292,7 @@ class TicTacToe extends React.Component {
     }
 
     return (
-      <div className='message'>
+      <div className='message' key='message'>
         {msg}
       </div>
     )
@@ -317,7 +317,7 @@ class TicTacToe extends React.Component {
 
   _renderGameControls() {
     return (
-      <div className='game-controls'>
+      <div className='game-controls' key='game-controls'>
         {this._renderDifficultyButtonRow()}
         {this._renderOtherControls()}
       </div>
@@ -358,7 +358,7 @@ class TicTacToe extends React.Component {
     }
 
     return (
-      <div className='other-controls'>
+      <div className='other-controls' key='other-controls'>
         AI Mistake Probability
         <input type="number" step="0.001" min="0" max="1"
           value={this.state.aiMistakeProbability.toString()}
@@ -386,7 +386,7 @@ class TicTacToe extends React.Component {
     }
 
     return [
-      <div className='difficulty-button-row'>
+      <div className='difficulty-button-row' key='difficulty-button-row'>
         <div className={easyToggleClass} onClick={(e) => { this._setDifficulty(EASY)}}>Easy</div>
         <div className={mediumToggleClass} onClick={(e) => {this._setDifficulty(MEDIUM)}}>Medium</div>
         <div className={hardToggleClass} onClick={(e) => {this._setDifficulty(HARD)}}>Hard</div>

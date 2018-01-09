@@ -81,8 +81,6 @@ function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, dep
 
   const winner = checkWinner(nextMoves, 3, 3).winner
 
-  // Avoided factoring depth in the win normalizations as they create less-than-
-  // predictable biases
   if (winner != null) {
     if (winner > 0) { // Player wins
       return [10 - depth, nextMoves]

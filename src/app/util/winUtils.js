@@ -37,8 +37,9 @@ export const getWinnerBySum = sum => {
 * @param {number} rows
 * @param {number} cols
 *
-* @return {number | null} The enumerated player who won (AI or human),
-*   DRAW enumeration, or null for no winner yet.
+* @return {object} An object containing the enumerated player who won (AI or human),
+*   DRAW enumeration, or null for no winner yet as the 'winner' key, and other information
+*   regarding where the win happened.
 */
 export const checkWinner = (board, rows=3, cols=3) => {
 
@@ -48,7 +49,11 @@ export const checkWinner = (board, rows=3, cols=3) => {
     for (let i = 0; i < rows; i++) {
       sum += board[i][j]
       if (Math.abs(sum) === rows) {
-        return getWinnerBySum(sum)
+        return {
+          winner: getWinnerBySum(sum),
+          type: 'column',
+          value: j
+        }
       }
     }
   }
@@ -59,7 +64,11 @@ export const checkWinner = (board, rows=3, cols=3) => {
     for (let j = 0; j < cols; j++) {
       sum += board[i][j]
       if (Math.abs(sum) === rows) {
-        return getWinnerBySum(sum)
+        return {
+          winner: getWinnerBySum(sum),
+          type: 'row',
+          value: i
+        }
       }
     }
   }
@@ -69,7 +78,10 @@ export const checkWinner = (board, rows=3, cols=3) => {
   for (let i = 0; i < rows; i++) {
     sum += board[i][i]
     if (Math.abs(sum) === rows) {
-      return getWinnerBySum(sum)
+      return {
+        winner: getWinnerBySum(sum),
+        type: 'downDiagonal'
+      }
     }
   }
 
@@ -78,7 +90,10 @@ export const checkWinner = (board, rows=3, cols=3) => {
   for (let i = 0; i < rows; i++) {
     sum += board[rows - 1 - i][i]
     if (Math.abs(sum) === rows) {
-      return getWinnerBySum(sum)
+      return {
+        winner: getWinnerBySum(sum),
+        type: 'upDiagonal'
+      }
     }
   }
 
@@ -93,8 +108,12 @@ export const checkWinner = (board, rows=3, cols=3) => {
   }
 
   if (!hasNull) {
-    return DRAW
+    return {
+      winner: DRAW
+    }
   }
 
-  return null
+  return {
+    winner: null
+  }
 }

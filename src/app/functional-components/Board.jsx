@@ -46,6 +46,7 @@ const makeRow = (props, rowInd) => {
           props.onCellClicked(rowInd, col)
         }
 
+        // maybe show the bint
         if (props.hint) {
           const hintCol = _.get(props.hint, 'col')
           const hintRow = _.get(props.hint, 'row')
@@ -71,6 +72,12 @@ const makeRow = (props, rowInd) => {
       let className = 'ttt-cell'
       if (isHint) {
         className += ' hint-jitter'
+      }
+
+      // Win animation
+      console.log("p", props.winSet, rowInd, i)
+      if (props.winSet && props.winSet[rowInd][i]) {
+        className += ' win-jitter'
       }
 
       cells.push(
@@ -107,6 +114,7 @@ Board.propTypes = {
   disabled: PropTypes.bool,
   players: PropTypes.object,
   onCellClicked: PropTypes.func,
+  winSet: PropTypes.array, // or null
   hint: PropTypes.object
 }
 

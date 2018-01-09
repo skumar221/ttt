@@ -24,6 +24,11 @@ const _generateEmptyMoves = (rows=3, cols=3) => {
   return moves
 }
 
+/**
+* Returns the initial state.
+*
+* @return {object}
+*/
 const _getInitialState = () => ({
   rows: 3,
   cols: 3,
@@ -34,7 +39,8 @@ const _getInitialState = () => ({
   currPlayer: plrs.HUMAN,
   difficulty: HARD,
   aiMistakeProbability: 0.00,
-  hint: null
+  hint: null,
+  winSet: null
 })
 
 class TicTacToe extends React.Component {
@@ -52,11 +58,11 @@ class TicTacToe extends React.Component {
       this._renderGameControls = this._renderGameControls.bind(this)
       this._renderOtherControls = this._renderOtherControls.bind(this)
       this._replayGame = this._replayGame.bind(this)
-      this._maybeFinishGame = this._maybeFinishGame.bind(this)
+      this._maybeCheckWinner = this._maybeCheckWinner.bind(this)
   }
 
   componentDidUpdate() {
-    this._maybeFinishGame()
+    this._maybeCheckWinner()
   }
 
   render() {
@@ -71,7 +77,8 @@ class TicTacToe extends React.Component {
             disabled={this._isBoardDisabled()}
             players={this.state.players}
             onCellClicked={this._insertMove}
-            hint={this.state.hint} />
+            hint={this.state.hint}
+            winSet={this.state.winSet} />
         </div>
         <div className='ttt-right-col'>
           <div className='message-box'>
@@ -83,15 +90,22 @@ class TicTacToe extends React.Component {
     )
   }
 
-  _maybeFinishGame(replayOK = false) {
+  /**
+  * Checks for the winner of a board, with the option to skip a check of whether
+  * the gamePhase is suitable to determine a winner.
+  *
+  * @param {boolean} checkGamePhase Optional check of the game phase, defaulted
+  *   true.  If false, proceeds to check the board as it is.
+  */
+  _maybeCheckWinner(checkGamePhase=true) {
     const { rows, cols, moves, gamePhase } = this.state
 
-    if (gamePhase !== PLAY && replayOK === false) {
+    if (gamePhase !== PLAY && checkGamePhase === true) {
       return
     }
 
-    const winner = checkWinner(moves, rows, cols)
-    switch (winner) {
+    const winObj = checkWinner(moves, rows, cols)
+    switch (winObj.winner) {
       case null:
         this._maybeMoveAI()
         break
@@ -99,7 +113,7 @@ class TicTacToe extends React.Component {
         this._onGameDraw()
         break
       default:
-        this._onGameWon()
+        this._onGameWon(winObj)
         break
     }
   }
@@ -139,15 +153,54 @@ class TicTacToe extends React.Component {
     })
   }
 
-  _onGameWon() {
+  /**
+  * @param {object} winObj The winner object containing who and where the win
+  *   belongs to
+  */
+  _onGameWon(winObj) {
+    let winSet = [
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0]
+    ]
+    switch (winObj.type) {
+      case 'downDiagonal':
+        winSet = [
+          [1, 0, 0],
+          [0, 1, 0],
+          [0, 0, 1]
+        ]
+        break
+      case 'upDiagonal':
+        winSet = [
+          [0, 0, 1],
+          [0, 1, 0],
+          [1, 0, 0]
+        ]
+        break
+      case 'column':
+        const col = winObj.value
+        for (let i = 0; i < this.state.rows; i++) {
+          winSet[i][col] = 1
+        }
+        break
+      case 'row':
+        const row = winObj.value
+        for (let i = 0; i < this.state.cols; i++) {
+          winSet[row][i] = 1
+        }
+        break
+    }
+
     this.setState({
-      gamePhase: WIN
+      gamePhase: WIN,
+      winSet: winSet
     })
   }
 
   /**
-  * Hijake for the REPLAY phase.  Uses a series of setTimeouts and setIntervals
-  * to replay the previous game.
+  * Uses a series of setTimeouts and setIntervals to replay the finished game.
+  * A little hacky, but suitable enough for this purpose.
   */
   _replayGame() {
     this.setState({
@@ -160,7 +213,7 @@ class TicTacToe extends React.Component {
       const interval = setInterval(() => {
         if (i === mh.length) {
           clearInterval(interval)
-          this._maybeFinishGame(true)
+          this._maybeCheckWinner(false)
           return
         }
 

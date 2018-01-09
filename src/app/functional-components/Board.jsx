@@ -75,7 +75,6 @@ const makeRow = (props, rowInd) => {
       }
 
       // Win animation
-      console.log("p", props.winSet, rowInd, i)
       if (props.winSet && props.winSet[rowInd][i]) {
         className += ' win-jitter'
       }

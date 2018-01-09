@@ -32,9 +32,7 @@ const print2d = board => {
 * @param {number} mistakeProbability The probability that
 */
 export const play = (moves, difficulty, player=players.AI, mistakeProbability=0) => {
-
   const mm = recurseMinimax(moves.map(r => [...r]), player, difficulty, 0, mistakeProbability)
-  console.log("minMax", mm)
   const nextMoves = mm[1]
 
   for (let i = 0; i < nextMoves.length; i++) {
@@ -87,15 +85,13 @@ function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, dep
                 nextMoves[i][j] = player
 
                 const b = recurseMinimax(nextMoves, players.getOtherPlayer(player), difficulty, ++depth, mistakeProbability)
-                const value = b[0]
-                const isMore = value > nextVal
-                const isLess = value < nextVal
-                const isNotEqual = value != nextVal
-
-                const isMistake = mistakeProbability > 0 && (_.random(1, 1000) <= (mistakeProbability * 1000))
+                const value = b[0],
+                  isMore = value > nextVal,
+                  isLess = value < nextVal,
+                  isNotEqual = value != nextVal,
+                  isMistake = mistakeProbability > 0 && (_.random(1, 1000) <= (mistakeProbability * 1000))
 
                 if (isMistake) {
-                  //console.log(`Mistake triggered! ${difficulty} is changing to:`)
                   switch(difficulty) {
                     case HARD:
                       difficulty = _.sample([EASY, MEDIUM])
@@ -110,7 +106,6 @@ function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, dep
                     default:
                       throw(`Invalid difficulty ${difficulty}`)
                   }
-                  //console.log(`${difficulty}\n`)
                 }
 
                 let posPlayerGate, negPlayerGate

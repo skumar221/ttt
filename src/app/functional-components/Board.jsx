@@ -3,10 +3,11 @@ import PropTypes from 'prop-types'
 import _ from 'lodash'
 
 /**
-* Returns all of the boards elements.
+* Returns all of the boards elements via the makeRow function.
 *
 * @param {object} props
-* @param {array<array<React.Element>>}
+*
+* @return {array<array<React.Element>>}
 */
 const makeRows = props => {
   let i = 0, rows = []
@@ -23,7 +24,8 @@ const makeRows = props => {
 *
 * @param {object} props
 * @param {number} rowInd
-* @param {array<React.Element>}
+*
+* @return {array<React.Element>}
 */
 const makeRow = (props, rowInd) => {
     let i = 0, cells = []

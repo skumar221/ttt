@@ -3,9 +3,9 @@ import * as players from '../constants/players.js'
 import { EASY, MEDIUM, HARD } from '../constants/difficultyLevels.js'
 
 /**
-* Utility method to print the board.
+* Utility method to print the board to the console.
 *
-* @param {array<array<number>>} board
+* @param {array<array<number>>} board The board to print.
 */
 const print2d = board => {
   let print = ''
@@ -24,12 +24,19 @@ const print2d = board => {
 
 
 /**
-*
+* The gatekeeper method of the AI that returns a posotion on the board adjusted to
+* the difficulty level.  Depending on the difficulty level, the position returned
+* will be optimized (or sub-optimized) to the player of the player argument.  Admittedly,
+* the loop at the end isn't ideal, but it's necessary to get a proper diff on the
+* provided board vs the returned board.
 *
 * @param {array<array<number>>} moves 2D array representing the board
 * @param {number} difficulty
-* @param {number} player
+* @param {number} player  The player, either 1 (the AI) or -1 (the player)
 * @param {number} mistakeProbability The probability that
+*
+* @return {object?} An object with the row and column to play, otherwise undefined
+*   if the board is at a win or a draw state.
 */
 export const play = (moves, difficulty, player=players.AI, mistakeProbability=0) => {
   const mm = recurseMinimax(moves.map(r => [...r]), player, difficulty, 0, mistakeProbability)
@@ -59,12 +66,21 @@ export const play = (moves, difficulty, player=players.AI, mistakeProbability=0)
 * @param {number} player The player, either 1 (the AI) or -1 (the player)
 * @param {number} difficulty The enumerated difficulty level
 * @param {number} depth The depth tracker, to weight the win and minimize the
-*   amount of moves
+*   amount of moves.  This is not used due to less-than-predictable biasing, but
+*   it's fun to toy with.
+* @param {number} mistakeProbability A random seed to introduce the potential for a mistake.
+*   this isn't fully fleshed out (it should only apply to the playing player), but
+*   is still useful for experimental purposes.
+*
+* @return {array<number, <array<array<number>>>>} A tuple containing the player at
+*   the 0 index and the to-be board at the 1 index.
 */
 function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, depth=0, mistakeProbability=0) {
 
   const winner = checkWinner(nextMoves, 3, 3)
 
+  // Avoided factoring depth in the win normalizations as they create less-than-
+  // predictable biases
   if (winner != null) {
     if (winner > 0) { // Player wins
       //return [10 - depth, nextMoves]
@@ -84,13 +100,17 @@ function recurseMinimax(nextMoves, player, difficulty=difficultyLevels.EASY, dep
             if (nextMoves[i][j] === null) {
                 nextMoves[i][j] = player
 
+                // Recursion hook
                 const b = recurseMinimax(nextMoves, players.getOtherPlayer(player), difficulty, ++depth, mistakeProbability)
+
                 const value = b[0],
                   isMore = value > nextVal,
                   isLess = value < nextVal,
                   isNotEqual = value != nextVal,
                   isMistake = mistakeProbability > 0 && (_.random(1, 1000) <= (mistakeProbability * 1000))
 
+                // Mistake logic -- randomly sample a difficulty level NOT
+                // provided in the argument.
                 if (isMistake) {
                   switch(difficulty) {
                     case HARD:
